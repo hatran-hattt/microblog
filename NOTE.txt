@@ -1,0 +1,13 @@
+1. Simple app
+    Source
+        microblog/
+        app/                -> package 'app'
+            __init__.py         -> package 'app' (declare app instance + module 'routes')
+            routes.py           -> routes handlers
+        microblog.py        -> main application module (import application instanceecho )
+
+    Run app
+        set FLASK_APP environment variable -> TODO: check more about config
+        flask run
+        flask --app app run
+        

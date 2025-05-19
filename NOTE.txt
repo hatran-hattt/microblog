@@ -45,3 +45,64 @@
             Suggested change:
             - import mockdata
             + from . import mockdata
+
+
+3. Web Forms
+    Extensions: Flask-WTF (a thin wrapper around the WTForms package)
+    Implement CSRF protection in Flask app
+        (1) Set configuration: app.config["SECRET_KEY"] (or app.config.from_object, ...)
+            (app: Flask class's instance)
+            (SECRET_KEY: Flask and some of its extensions use the value of the secret key as a cryptographic key,
+            useful to generate signatures or tokens.
+            The Flask-WTF extension uses it to protect web forms against a nasty attack called Cross-Site Request Forgery)
+        (2) In template: form.hidden_tag()
+            - This method primarily handles CSRF protection by injecting the CSRF token as a hidden field.
+            - It also iterates through all hidden fields within the form and renders them.
+                -> Note: Still define HiddenField to more control and clarity
+    Form class (base: FlaskForm): defines the fields of the form as class variables.
+        (import (form fields, validator) from wtforms package)
+    Form template:
+        Fields that are defined in the FlaskForm class know how to render themselves as HTML
+            example:
+            <form action="" method="post" novalidate>
+                {{ form.hidden_tag() }}
+                <p>
+                    {{ form.username.label }}<br>
+                    {{ form.username(size=32) }}<br>
+                    {% for error in form.username.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+                </p>
+                <p>
+                    {{ form.password.label }}<br>
+                    {{ form.password(size=32) }}<br>
+                    {% for error in form.password.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
+                </p>
+                <p>{{ form.remember_me() }} {{ form.remember_me.label }}</p>
+                <p>{{ form.submit() }}</p>
+            </form>
+
+        If you've written HTML web forms in the past, you may have found it odd that there are no HTML fields in this template. This is because the fields from the form object know how to render themselves as HTML. All I needed to do was to include {{ form.<field_name>.label }} where I wanted the field label, and {{ form.<field_name>() }} where I wanted the field. For fields that require additional HTML attributes, those can be passed as arguments. The username and password fields in this template take the size as an argument that will be added to the <input> HTML element as an attribute. This is how you can also attach CSS classes or IDs to form fields.
+    View function
+        from flask import render_template, flash, redirect
+
+        @app.route('/login', methods=['GET', 'POST'])
+        def login():
+            form = LoginForm()
+            if form.validate_on_submit():
+                flash('Login requested for user {}, remember_me={}'.format(
+                    form.username.data, form.remember_me.data))
+                return redirect('/index')
+            return render_template('login.html', title='Sign In', form=form)
+
+        Note
+            - form.validate_on_submit()
+            - flash(): store message - used to show once on template ({% with messages = get_flashed_messages() %})
+            - redirect()
+
+
+----------------------------------------------
+# Others
+    Generating Links: url_for

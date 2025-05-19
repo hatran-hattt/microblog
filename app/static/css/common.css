@@ -31,3 +31,9 @@
   text-decoration: none;
   letter-spacing: 2px;
 }
+
+.error-message {
+  color: #ff0000;
+  text-align: center;
+  margin-top: 20px;
+}

@@ -11,3 +11,37 @@
         flask run
         flask --app app run
         
+
+2. Template
+    The render_template() function invokes the Jinja template engine that comes bundled with the Flask framework.
+    Jinja template engine's some feature:
+        - fill value
+            <h1>Hello, {{ user.username }}!</h1>
+        - conditional statements
+            <head>
+                {% if title %}
+                <title>{{ title }} - Microblog</title>
+                {% else %}
+                <title>Welcome to Microblog!</title>
+                {% endif %}
+            </head>
+        - loop
+            {% for post in posts %}
+            <div><p>{{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
+            {% endfor %}
+        - template inheritance (block control statement + extends statement )
+            + base template
+                {% block content %}{% endblock %} 
+            + child template
+                {% extends "base.html" %}
+
+                {% block content %}
+                    ...
+                {% endblock %}
+
+    Note:
+        (1) ImportError exception when import module from current directory
+            The mockdata module is imported, but it is not clear if it is a local module or an external dependency. If it is a local module, it should follow the proper relative import convention (e.g., from . import mockdata) to avoid conflicts with similarly named external modules.
+            Suggested change:
+            - import mockdata
+            + from . import mockdata

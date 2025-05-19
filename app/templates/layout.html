@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Microblog is a simple blogging platform to share your thoughts."
+    />
+    <meta name="keywords" content="microblog, blog, posts, social, platform" />
+    {% if title %}
+    <title>{{ title }}</title>
+    {% else %}
+    <title>MICROBLOG</title>
+    {% endif %}
+    <link rel="stylesheet" href=" ../static/css/common.css" />
+    <script src=" ../static/js/common.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <a href="{{ url_for('index') }}">
+        <img
+          src="../static/img/background-logo.jpg"
+          alt="Logo"
+          width="120"
+          height="60"
+        />
+      </a>
+    </header>
+    <main>{% block content %}{% endblock %}</main>
+    <footer>
+      <p>© 2025 MICROBLOG</p>
+    </footer>
+    <script>
+      // Inline script for demonstration purposes
+      document.addEventListener("DOMContentLoaded", function () {
+        console.log("Document is ready!");
+      });
+    </script>
+  </body>
+</html>

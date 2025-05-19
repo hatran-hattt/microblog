@@ -17,15 +17,8 @@
     <script src=" ../static/js/common.js" defer></script>
   </head>
   <body>
-    <header>
-      <a href="{{ url_for('index') }}">
-        <img
-          src="../static/img/background-logo.jpg"
-          alt="Logo"
-          width="120"
-          height="60"
-        />
-      </a>
+    <header class="header-bg">
+      <a href="{{ url_for('index') }}"> MICROBLOG </a>
     </header>
     <main>{% block content %}{% endblock %}</main>
     <footer>

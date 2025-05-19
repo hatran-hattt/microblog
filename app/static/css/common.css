@@ -1,0 +1,33 @@
+.header-bg {
+  background-image: url("../img/header-background.jpg");
+  background-size: cover;
+  background-position: center;
+  height: 120px;
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-bg::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4); /* dark overlay, adjust opacity as needed */
+  z-index: 1;
+}
+
+.header-bg a {
+  position: relative;
+  z-index: 2;
+  color: #fff;
+  font-size: 2rem;
+  font-weight: bold;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+  text-decoration: none;
+  letter-spacing: 2px;
+}

@@ -8,6 +8,9 @@
 
     Run app
         set FLASK_APP environment variable -> TODO: check more about config
+            (*) Note: The flask run command will look for a Flask application instance in the module referenced by the FLASK_APP environment variable
+             Flask allows you to register environment variables that you want to be automatically used when you run the flask command. To use this option you have to install the python-dotenv package.
+             Now you can just write the environment variable name and value in a file named .flaskenv located in the top-level directory of the project
         flask run
         flask --app app run
         
@@ -50,15 +53,17 @@
 3. Web Forms
     Extensions: Flask-WTF (a thin wrapper around the WTForms package)
     Implement CSRF protection in Flask app
-        (1) Set configuration: app.config["SECRET_KEY"] (or app.config.from_object, ...)
-            (app: Flask class's instance)
+        (1) Set a secret key for your Flask application (set configuration "SECRET_KEY")
             (SECRET_KEY: Flask and some of its extensions use the value of the secret key as a cryptographic key,
             useful to generate signatures or tokens.
             The Flask-WTF extension uses it to protect web forms against a nasty attack called Cross-Site Request Forgery)
-        (2) In template: form.hidden_tag()
+        (2) Include the CSRF Token in the Templat: form.hidden_tag()
             - This method primarily handles CSRF protection by injecting the CSRF token as a hidden field.
             - It also iterates through all hidden fields within the form and renders them.
                 -> Note: Still define HiddenField to more control and clarity
+        (3) Validate form:
+            In your Flask view function, validate the form using form.validate_on_submit(). This function checks the CSRF token along with other form data.
+        
     Form class (base: FlaskForm): defines the fields of the form as class variables.
         (import (form fields, validator) from wtforms package)
     Form template:
@@ -103,6 +108,75 @@
             - redirect()
 
 
-----------------------------------------------
+4. Database
+    - Extensions:
+        + Flask-SQLAlchemy (provides a Flask-friendly wrapper to the popular SQLAlchemy package, which is an Object Relational Mapper or ORM)
+            SQLAlchemy supports a long list of database engines, including the popular MySQL, PostgreSQL and SQLite
+        + Flask-Migrate (Flask wrapper for Alembic, a database migration framework for SQLAlchemy)
+    - Config for Extensions
+        + SQLALCHEMY_DATABASE_URI: 
+            An environment variable used by Flask-SQLAlchemy to specify the connection string for the database.
+            It informs Flask-SQLAlchemy about the database dialect, driver, host, port, username, password, and database name.
+            The format of the DATABASE_URL typically follows the pattern: dialect+driver://username:password@host:port/database
+            Ex:
+                # mysql://user:password@localhost:3306/mydatabase
+                # postgresql://user:password@localhost:5432/mydatabase
+                # sqlite:////absolute/path/to/database.db
+
+    - Init instances (db = SQLAlchemy(app), migrate = Migrate(app, db))
+    - Database Models
+        + Import modules (base class: db.Model)
+            # sqlalchemy: module includes general purpose database functions and classes such as types and query building helpers
+            # sqlalchemy.orm: provides the support for using models
+            # typing: support type hints (Optional type)
+        + Fields
+            # Fields are assigned a type using Python type hints, wrapped with SQLAlchemy's so.Mapped generic type.
+                A type declaration such as so.Mapped[int] or so.Mapped[str] define the type of the column,
+                and also make values required, or non-nullable in database terms. 
+                To define a column that is allowed to be empty or nullable, the Optional helper from Python is also added, as password_hash demonstrates.
+            # In most cases defining a table column requires more than the column type.
+                SQLAlchemy uses a so.mapped_column() function call assigned to each column to provide this additional configuration.
+                In the case of id above, the column is configured as the primary key.
+                For string columns many databases require a length to be given, so this is also included.
+                I have included other optional arguments that allow me to indicate which fields are unique and indexed,
+                which is important so that database is consistent and searches are efficient.
+
+        + Notes:
+            # The __repr__ method tells Python how to print objects of this class, which is going to be useful for debugging
+            #Note that Flask-SQLAlchemy uses a "snake case" naming convention for database tables by default. For the User model above, the corresponding table in the database will be named user. For a AddressAndPhone model class, the table would be named address_and_phone. If you prefer to choose your own table names, you can add an attribute named __tablename__ to the model class, set to the desired name as a string
+    
+
+    - DB Migration
+        + [First time only] Create the migration repository
+            flask db init
+                -> a new migrations directory, with a few files and a versions subdirectory inside. All these files should be treated as part of your project
+        + Add/Update model classes
+        + flask db migrate (optional: -m "users table")
+            -> migration script is generated
+                contains 2 function: upgrade, downgrade (This allows Alembic to migrate the database to any point in the history, even to older versions, by using the downgrade path)
+        + flask db upgrade/downgrade
+            -> SQLite: if db not exist, then auto create
+            -> DB Server: need create DB in DB Server before running
+    - DB logic
+        Add
+            db.session.add(modelObj)
+            db.session.commit()/rollback()
+        Query
+            query = sqlalchemy.select(ModelClass)
+                                                .orderby(ModelClass.field_name.desc())
+                                                .where(ModelClass.field_name.like('a%'))
+            query = modelObj.relation_attribute.select()
+            db.session.scalars(query)
+ ----------------------------------------------
+
+
 # Others
-    Generating Links: url_for
+    - Generating Links: url_for
+    - Set configuration: app.config["KEY"] or app.config.from_object, ...
+            (app: Flask class's instance)
+    
+
+    
+
+
+

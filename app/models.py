@@ -3,9 +3,12 @@ from typing import Optional
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from app import db
+from app import login
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
     username: orm.Mapped[str] = orm.mapped_column(
         sa.String(80), index=True, unique=True
@@ -20,6 +23,14 @@ class User(db.Model):
 
     def __repr__(self):
         return f"<User {self.username}>"
+
+    def set_password(self, password) -> None:
+        """Set the password hash for the user."""
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        """Check the password against the stored hash."""
+        return check_password_hash(self.password_hash, password)
 
 
 class Post(db.Model):

@@ -170,7 +170,79 @@
  ----------------------------------------------
 
 
+5. User Login
+    - Password hashing
+        + Package: werkzeug (dependency of Flask -> alredy installed)
+            Utility functions:
+            werkzeug.security.generate_password_hash
+            werkzeug.security.check_password_hash
+        + define func in User model: set_password, check_password
+    
+    - User session management
+        + Package: Flask-Login
+            It provides user session management for Flask.
+            It handles the common tasks of logging in, logging out, and remembering your users’ sessions over extended periods of time.
+        + Init instance
+            from flask_login import LoginManager
+            ...
+            login = LoginManager(app)
+        + Prepare the User model for flask-login
+            The Flask-Login extension works with the application's user model, and expects certain properties and methods to be implemented in it
+            The four required items are listed below:
+                is_authenticated: a property that is True if the user has valid credentials or False otherwise.
+                is_active: a property that is True if the user's account is active or False otherwise.
+                is_anonymous: a property that is False for regular users, and True only for a special, anonymous user.
+                get_id(): a method that returns a unique identifier for the user as a string
+                -> Flask-Login provides a mixin class called UserMixin that includes safe implementations that are appropriate for most user model classes
+            
+        + User Loader Function
+            # Flask-Login keeps track of the logged in user by storing its unique identifier in Flask's user session, a storage space assigned to each user who connects to the application. Each time the logged-in user navigates to a new page, Flask-Login retrieves the ID of the user from the session, and then loads that user into memory.
+            # Because Flask-Login knows nothing about databases, it needs the application's help in loading a user. For that reason, the extension expects that the application will configure a user loader function, that can be called to load a user given the ID
+            #The user loader is registered with Flask-Login with the @login.user_loader decorator
+        + Logging User In
+            from flask_login import current_user, login_user
+            def login:
+                ....if current_user.is_authenticated
+                .....login_user(user, boolRememberMe) -> This function will register the user as logged in, so that means that any future pages the user navigates to will have the current_user variable set to that user.
+
+        + Logging User Out
+            from flask_login import logout_user
+            def logout:
+                logout_user()
+
+            (Note: handle showing button login/logout by using current_user.is_anonymous)
+        + Requiring User To Login
+            # set function handle login for flask-login instance
+                login.login_view = 'login'
+            # setting to protect views
+                @login_required
+                -> the decorator is going to redirect to the login page,
+                but it is going to include some extra information in this redirect so that the application can then return to the original page
+                ex: redirect URL /login?next=/index
+
+                -> setting after call login_user
+                    next_page = request.args.get('next')
+                    if not next_page or urlsplit(next_page).netloc != '':
+                        next_page = url_for('index')
+                    return redirect(next_page)
+
+                    ---------
+                    If the login URL does not have a next argument, then the user is redirected to the index page.
+                    If the login URL includes a next argument that is set to a relative path (or in other words, a URL without the domain portion), then the user is redirected to that URL.
+                    If the login URL includes a next argument that is set to a full URL that includes a domain name, then this URL is ignored, and the user is redirected to the index page.
+                        -> An attacker could insert a URL to a malicious site in the next argument, so the application only redirects when the URL is relative, which ensures that the redirect stays within the same site as the application. To determine if the URL is absolute or relative, I parse it with Python's urlsplit() function and then check if the netloc component is set or not
+                    ----------
+        + User Registration
+            # RegistrationForm
+                from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
+                -> Package: email-validator (for Email validator)
+                -> custom validator function:
+                    + naming: validate_<field_name>
+                    + raise: ValidationError
+
+
 # Others
+    - Externally Visible Server: flask run --host=0.0.0.0
     - Generating Links: url_for
     - Set configuration: app.config["KEY"] or app.config.from_object, ...
             (app: Flask class's instance)

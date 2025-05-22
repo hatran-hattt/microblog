@@ -241,6 +241,29 @@
                     + raise: ValidationError
 
 
+6. Profile Page & Avatar
+    - Profile page
+        + Route /user/<username>: dynamic component
+        + Profile infos: avatar, last seen, about me (TextAreaField)
+    - Edit profile page
+        + route /edit_profile, handle form.data when re show
+            # case post + data valid: do nothing (when redirect to /edit_profile -> case get)
+            # case get: fill data from DB
+            # case post + data invalid: do nothing (were already populated by WTForms)
+    - Others:
+        + Use Gravatar service to get avatar
+            https://www.gravatar.com/avatar/<MD5 hashed email(lower case)>
+            Parameters:
+                ?s=128 (avatar image size, default 80)
+                ?d=identicon (geometric design image - provided by Gravatar, if user not yet upload image)
+            Package md5 hash: from hashlib import md5
+        + Jinja sub-template (handle reuse part, ex: post view is shown at profile page + index page)
+                {% for post in posts %}
+                    {% include '_post.html' %}
+                {% endfor %}
+        + Recording The Last Visit Time of user
+            The @before_request decorator from Flask register the decorated function to be executed right before the view function
+
 # Others
     - Externally Visible Server: flask run --host=0.0.0.0
     - Generating Links: url_for

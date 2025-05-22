@@ -1,0 +1,17 @@
+<div class="post">
+  <img
+    src="{{ post.author.get_avatar_url(50) }}"
+    alt="Post Author Avatar"
+    class="post-avatar"
+    width="50"
+    height="50"
+  />
+  <div class="post-content">
+    <p>
+      <span class="author-name"
+        >{{ post.author.get_display_name() }} says:</span
+      >
+    </p>
+    <p>{{ post.content }}</p>
+  </div>
+</div>

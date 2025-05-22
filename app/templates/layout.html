@@ -17,32 +17,40 @@
     <script src=" ../static/js/common.js" defer></script>
   </head>
   <body>
-    <header class="header-bg">
-      <a href="{{ url_for('index') }}"> MICROBLOG </a>
-    </header>
-    <nav>
-      <ul>
-        <li><a href="{{ url_for('index') }}">Home</a></li>
-        {% if current_user.is_anonymous %}
-        <li><a href="{{ url_for('login') }}">Login</a></li>
-        {% else %}
-        <li><a href="{{ url_for('logout') }}">Logout</a></li>
-        {% endif %}
-      </ul>
-    </nav>
+    <div class="container">
+      <header>
+        <h1><a href="{{ url_for('index') }}">Microblog</a></h1>
+        <nav>
+          <ul>
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            {% if current_user.is_anonymous %}
+            <li><a href="{{ url_for('login') }}">Login</a></li>
+            {% else %}
+            <li>
+              <a href="{{ url_for('user', username=current_user.username) }}"
+                >Profile</a
+              >
+            </li>
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            {% endif %}
+          </ul>
+        </nav>
+      </header>
 
-    {% with messages = get_flashed_messages() %} {% if messages %}
-    <div class="flash-messages">
-      {% for message in messages %}
-      <div class="flash-message">{{ message }}</div>
-      {% endfor %}
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="flash-message {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %} {% endwith %}
+
+      <main>{% block content %}{% endblock %}</main>
+      <footer>
+        <p>© 2025 MICROBLOG</p>
+      </footer>
     </div>
-    {% endif %} {% endwith %}
-
-    <main>{% block content %}{% endblock %}</main>
-    <footer>
-      <p>© 2025 MICROBLOG</p>
-    </footer>
     <script>
       // Inline script for demonstration purposes
       document.addEventListener("DOMContentLoaded", function () {

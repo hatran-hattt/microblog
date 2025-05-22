@@ -14,6 +14,7 @@ migrate = Migrate(app, db)
 # Initialize the login manager and set the login view
 login = LoginManager(app)
 login.login_view = "login"
+login.login_message_category = "error"
 
 
 # Provide user loader function for Flask-Login

@@ -1,0 +1,23 @@
+{% extends "layout.html" %} {% block content %}
+
+<h2>Edit Profile</h2>
+<form action="{{ url_for('edit_profile') }}" method="post" novalidate>
+  {{form.hidden_tag()}}
+  <div>
+    {{ form.fullname.label}}<br />
+    {{ form.fullname(size=50) }}<br />
+    {% for error in form.fullname.errors %}
+    <span class="error-message">[{{ error }}]</span>
+    {% endfor %}
+  </div>
+  <div>
+    {{ form.about_me.label}}<br />
+    {{ form.about_me(cols=50, rows=5) }}<br />
+    {% for error in form.about_me.errors %}
+    <span class="error-message">[{{ error }}]</span>
+    {% endfor %}
+  </div>
+  <div>{{ form.submit() }}</div>
+</form>
+
+{% endblock %}

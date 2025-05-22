@@ -6,6 +6,7 @@ from app import db
 from app import login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from hashlib import md5
 
 
 class User(UserMixin, db.Model):
@@ -15,6 +16,11 @@ class User(UserMixin, db.Model):
     )
     email: orm.Mapped[str] = orm.mapped_column(sa.String(120), index=True, unique=True)
     password_hash: orm.Mapped[Optional[str]] = orm.mapped_column(sa.String(256))
+    fullname: orm.Mapped[Optional[str]] = orm.mapped_column(sa.String(256), index=True)
+    last_seen: orm.Mapped[Optional[datetime]] = orm.mapped_column(
+        default=lambda: datetime.now(timezone.utc)
+    )
+    about_me: orm.Mapped[Optional[str]] = orm.mapped_column(sa.String(256))
 
     # Relationship to Post
     posts: orm.WriteOnlyMapped["Post"] = orm.relationship(
@@ -31,6 +37,15 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         """Check the password against the stored hash."""
         return check_password_hash(self.password_hash, password)
+
+    def get_display_name(self):
+        return self.fullname or self.username
+
+    def get_avatar_url(self, size):
+        digest = md5(
+            self.email.lower().encode("utf-8")
+        ).hexdigest  # because the MD5 support in Python works on bytes and not on strings -> encode the string as bytes before passing it on to the hash function
+        return f"https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}"
 
 
 class Post(db.Model):

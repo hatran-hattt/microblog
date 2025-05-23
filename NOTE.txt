@@ -264,6 +264,52 @@
         + Recording The Last Visit Time of user
             The @before_request decorator from Flask register the decorated function to be executed right before the view function
 
+
+7. Error Handling
+    - Custom error pages
+        @app.errorhandler(404)
+        def not_found_error(error):
+            return render_template('404.html'), 404
+        
+        @app.errorhandler(500)
+        def internal_error(error):
+            db.session.rollback()
+            return render_template('500.html'), 500
+    - Attach handler (mail, file) to Flask app's logger
+        app.logger.addHandler(...handler)
+            mail_handler: SMTPHandler
+            file_handler: RotatingFileHandler
+        (from logging.handlers import ...Handler)
+    - Send error by email
+        + Config email server details:
+            server and port, a boolean flag to enable encrypted connections, and optional username and password
+                MAIL_SERVER = os.environ.get('MAIL_SERVER')
+                MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)      # if not set, the standard port 25 is used
+                MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
+                MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+                MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+            list of the email addresses that will receive error reports
+                ADMINS = ['your-email@example.com']
+
+        + Testing
+            # Use SMTP debugging server (fake email server that accepts emails, but instead of sending them, it prints them to the console)
+                Package: aiosmtpd
+                    start: aiosmtpd -n -c aiosmtpd.handlers.Debugging -l localhost:8025
+                Set config
+                        export MAIL_SERVER=localhost
+                        export MAIL_PORT=8025
+            # Use real email server
+                Set config 
+                    (ex: GMAIL acc -> NG: "less secure apps" https://support.google.com/accounts/answer/6010255?hl=en)
+                        export MAIL_SERVER=smtp.googlemail.com
+                        export MAIL_PORT=587
+                        export MAIL_USE_TLS=1
+                        export MAIL_USERNAME=<your-gmail-username>
+                        export MAIL_PASSWORD=<your-gmail-password>
+                    )
+            # TODO: use ESP SendGrid  
+    - Log error to file
+    
 # Others
     - Externally Visible Server: flask run --host=0.0.0.0
     - Generating Links: url_for

@@ -50,7 +50,7 @@ class User(UserMixin, db.Model):
 
 class Post(db.Model):
     id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
-    body: orm.Mapped[str] = orm.mapped_column(sa.String(140))
+    content: orm.Mapped[str] = orm.mapped_column(sa.String(5000))
     timestamp: orm.Mapped[datetime] = orm.mapped_column(
         index=True, default=lambda: datetime.now(timezone.utc)
     )
@@ -60,4 +60,4 @@ class Post(db.Model):
     author: orm.Mapped[User] = orm.relationship(back_populates="posts")
 
     def __repr__(self):
-        return f"<Post {self.body}>"
+        return f"<Post {self.content}>"

@@ -3,7 +3,7 @@ from flask import render_template, flash, redirect, url_for, request
 from app import db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import User
+from app.models import User, Post
 from urllib.parse import urlsplit
 import sqlalchemy as sa
 from datetime import datetime, timezone
@@ -25,18 +25,7 @@ def index():
         "index.html",
         title="Home",
         user=current_user,
-        posts=[
-            {
-                "author": current_user,
-                "title": "Post 1",
-                "content": "Content of post 1",
-            },
-            {
-                "author": current_user,
-                "title": "Post 2",
-                "content": "Content of post 2",
-            },
-        ],
+        posts=get_posts_of_user(current_user.username),
     )
 
 
@@ -98,9 +87,19 @@ def register():
 
     # Validate the form on submission
     if form.validate_on_submit():
+        # Create user
         user = User(username=form.username.data, email=form.email.data)
         user.set_password(form.password.data)
         db.session.add(user)
+        db.session.commit()
+
+        # TODO: temp post
+        user = User.query.filter_by(username=form.username.data).first()
+        post = Post(
+            content="First post (Auto generated after registering user)",
+            user_id=user.id,
+        )
+        db.session.add(post)
         db.session.commit()
         flash("Congratulations, you are now a registered user!", "success")
         return redirect(url_for("login"))
@@ -117,19 +116,10 @@ def register():
 @login_required
 def user(username):
     user = db.first_or_404(sa.select(User).where(User.username == username))
-    posts = [
-        {
-            "author": user,
-            "title": "Post 1",
-            "content": "Content of post 1",
-        },
-        {
-            "author": user,
-            "title": "Post 2",
-            "content": "Content of post 2",
-        },
-    ]
-    return render_template("user.html", title="User Info", user=user, posts=posts)
+
+    return render_template(
+        "user.html", title="User Info", user=user, posts=get_posts_of_user(username)
+    )
 
 
 @app.route("/edit_profile", methods=["GET", "POST"])
@@ -149,3 +139,12 @@ def edit_profile():
         form.about_me.data = current_user.about_me
 
     return render_template("edit_profile.html", title="Edit Profile", form=form)
+
+
+def get_posts_of_user(username):
+    user = User.query.filter(User.username == username).first()
+    if user is None:
+        return []
+
+    posts = Post.query.filter(Post.user_id == user.id).all()
+    return posts

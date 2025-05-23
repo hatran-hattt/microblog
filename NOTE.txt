@@ -269,7 +269,7 @@
     - Generating Links: url_for
     - Set configuration: app.config["KEY"] or app.config.from_object, ...
             (app: Flask class's instance)
-    
+    - form's action attribute {{ url_for(...)}} -> current url's query string will not be send to server
 
     
 

@@ -309,6 +309,18 @@
                     )
             # TODO: use ESP SendGrid  
     - Log error to file
+
+
+8. Followers
+    DB ORM
+        + Define the Association Table (Junction Table) -> This table doesn't need its own ORM class; it's just a SQLAlchemy Table object.
+        + Define the self-referential many-to-many relationship in User model
+            params:
+                + secondary         # This is the junction table
+                + primaryjoin       # How the 'left' side (this side's ID) connects to the junction table
+                + secondaryjoin     # How the 'right' side (other side's ID) connects to the junction table
+                + back_populates    # other side relationship name
+    EmptyForm for follow/unfollow
     
 # Others
     - Externally Visible Server: flask run --host=0.0.0.0

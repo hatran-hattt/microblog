@@ -126,6 +126,12 @@ header nav ul li a:hover {
   font-weight: bold;
   color: #555;
 }
+.post-timestamp {
+  /* New style for post timestamp */
+  font-size: 0.8em;
+  color: #999;
+  margin-top: 5px; /* Spacing below the timestamp */
+}
 
 .error-message {
   color: #ff0000;

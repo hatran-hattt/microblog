@@ -1,7 +1,7 @@
 from app import app
 from flask import render_template, flash, redirect, url_for, request
 from app import db
-from app.forms import LoginForm, RegistrationForm, EditProfileForm
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, EmptyForm
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Post
 from urllib.parse import urlsplit
@@ -25,7 +25,7 @@ def index():
         "index.html",
         title="Home",
         user=current_user,
-        posts=get_posts_of_user(current_user.username),
+        posts=current_user.get_posts(),
     )
 
 
@@ -90,17 +90,20 @@ def register():
         # Create user
         user = User(username=form.username.data, email=form.email.data)
         user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
 
         # TODO: temp post
-        user = User.query.filter_by(username=form.username.data).first()
-        post = Post(
-            content="First post (Auto generated after registering user)",
-            user_id=user.id,
+        user.posts.add(
+            Post(content="First post (Auto generated after registering user)")
         )
-        db.session.add(post)
+        user.posts.add(
+            Post(content="Second post (Auto generated after registering user)")
+        )
+
+        db.session.add(
+            user
+        )  # The reason Post object was saved even without explicit session.add(post) or cascade="all" is due to the default save-update cascade behavior of SQLAlchemy relationships. When post3 was assigned to user2.posts, and user2 was added to the session, SQLAlchemy's object graph traversal during the flush detected post3 as a new, related object and automatically included it in the transaction for saving. This automatic behavior is convenient but can sometimes obscure the underlying session management if you're not aware of the default cascade rules.
         db.session.commit()
+
         flash("Congratulations, you are now a registered user!", "success")
         return redirect(url_for("login"))
 
@@ -116,9 +119,13 @@ def register():
 @login_required
 def user(username):
     user = db.first_or_404(sa.select(User).where(User.username == username))
-
+    form = EmptyForm()
     return render_template(
-        "user.html", title="User Info", user=user, posts=get_posts_of_user(username)
+        "user.html",
+        title="User Info",
+        user=user,
+        posts=get_posts_of_user(username),
+        form=form,
     )
 
 
@@ -139,6 +146,42 @@ def edit_profile():
         form.about_me.data = current_user.about_me
 
     return render_template("edit_profile.html", title="Edit Profile", form=form)
+
+
+@app.route("/user/<username>/<action>", methods=["POST"])
+@login_required
+def user_action(username, action):
+    form = EmptyForm()
+
+    if form.validate_on_submit():
+
+        # Case user exists
+        user = User.query.filter(User.username == username).first()
+        if user is None:
+            flash("User not found.", "error")
+            return redirect(url_for("index"))
+
+        # Case is current user
+        if user == current_user:
+            flash("Can not follow/unfollow yourself.", "error")
+            return redirect(url_for("user", username=username))
+
+        # Case action invalid
+        if action != "follow" and action != "unfollow":
+            flash("Action invalid.", "error")
+            return redirect(url_for("user", username=username))
+
+        # Case valid
+        if action == "follow":
+            flash("Follow successfully.", "success")
+            current_user.follow(user)
+        else:
+            flash("Unfollow successfully.", "success")
+            current_user.unfollow(user)
+        db.session.commit()
+        return redirect(url_for("user", username=username))
+
+    return redirect(url_for("index"))
 
 
 def get_posts_of_user(username):

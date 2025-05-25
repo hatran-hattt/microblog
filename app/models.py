@@ -9,6 +9,15 @@ from flask_login import UserMixin
 from hashlib import md5
 
 
+# https://docs.sqlalchemy.org/en/20/orm/join_conditions.html#self-referential-many-to-many-relationship
+user_connection = sa.Table(
+    "user_connection",
+    db.metadata,
+    sa.Column("following_id", sa.Integer, sa.ForeignKey("user.id"), primary_key=True),
+    sa.Column("follower_id", sa.Integer, sa.ForeignKey("user.id"), primary_key=True),
+)
+
+
 class User(UserMixin, db.Model):
     id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
     username: orm.Mapped[str] = orm.mapped_column(
@@ -23,9 +32,27 @@ class User(UserMixin, db.Model):
     about_me: orm.Mapped[Optional[str]] = orm.mapped_column(sa.String(256))
 
     # Relationship to Post
-    posts: orm.WriteOnlyMapped["Post"] = orm.relationship(
+    posts: orm.WriteOnlyMapped[list["Post"]] = orm.relationship(
         back_populates="author"
     )  # TODO: check WriteOnlyMapped
+
+    followers: orm.WriteOnlyMapped[list["User"]] = orm.relationship(
+        secondary=user_connection,  # This is the junction table
+        primaryjoin=id
+        == user_connection.c.following_id,  # How the 'left' side (this side's ID) connects to the junction table
+        secondaryjoin=id
+        == user_connection.c.follower_id,  # How the 'right' side (other side's ID) connects to the junction table
+        back_populates="following",
+    )
+
+    following: orm.WriteOnlyMapped[list["User"]] = orm.relationship(
+        secondary=user_connection,  # configures the association table that is used for this relationship
+        primaryjoin=id
+        == user_connection.c.follower_id,  # How the 'left' side (this side's ID) connects to the junction table
+        secondaryjoin=id
+        == user_connection.c.following_id,  # How the 'right' side (other side's ID) connects to the junction table
+        back_populates="followers",
+    )
 
     def __repr__(self):
         return f"<User {self.username}>"
@@ -46,6 +73,51 @@ class User(UserMixin, db.Model):
             self.email.lower().encode("utf-8")
         ).hexdigest  # because the MD5 support in Python works on bytes and not on strings -> encode the string as bytes before passing it on to the hash function
         return f"https://www.gravatar.com/avatar/{digest}?d=identicon&s={size}"
+
+    def is_following(self, user):
+        query = self.following.select().where(User.id == user.id)
+        return db.session.scalar(query) is not None
+
+    def follow(self, user):
+        if not self.is_following(user):
+            self.following.add(user)
+
+    def unfollow(self, user):
+        if self.is_following(user):
+            self.following.remove(user)
+
+    def count_followers(self):
+        query = sa.select(sa.func.count()).select_from(
+            self.followers.select().subquery()
+        )
+        return db.session.scalar(query)
+
+    def count_following(self):
+        query = sa.select(sa.func.count()).select_from(
+            self.following.select().subquery()
+        )
+        return db.session.scalar(query)
+
+    def get_posts(self):
+
+        following_ids_subquery = (
+            sa.select(user_connection.c.following_id)
+            .where(user_connection.c.follower_id == self.id)
+            .subquery()
+        )
+
+        query = (
+            sa.select(Post)
+            .where(
+                sa.or_(
+                    Post.user_id == self.id,
+                    Post.user_id.in_(following_ids_subquery),
+                )
+            )
+            .order_by(Post.timestamp.desc())
+        )
+
+        return db.session.scalars(query).all()
 
 
 class Post(db.Model):

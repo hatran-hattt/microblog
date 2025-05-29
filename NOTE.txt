@@ -321,13 +321,62 @@
                 + secondaryjoin     # How the 'right' side (other side's ID) connects to the junction table
                 + back_populates    # other side relationship name
     EmptyForm for follow/unfollow
-    
+
+8. Pagination
+    SQLAlchemy supports pagination natively with the db.paginate() function (return Pagination object)
+    It works like db.session.scalars(), but with pagination built-in
+        >>> query = sa.select(Post).order_by(Post.timestamp.desc())
+        >>> posts = db.paginate(query, page=1, per_page=20, error_out=False).items
+    Params
+        page: the page number, starting from 1
+        per_page: the number of items per page
+        error_out: an error flag. If True, when an out of range page is requested a 404 error will be automatically returned to the client. If False, an empty list will be returned for out of range pages.
+        
 # Others
     - Externally Visible Server: flask run --host=0.0.0.0
     - Generating Links: url_for
     - Set configuration: app.config["KEY"] or app.config.from_object, ...
             (app: Flask class's instance)
     - form's action attribute {{ url_for(...)}} -> current url's query string will not be send to server
+    - Post/Redirect/Get trich (avoids inserting duplicate posts when a user inadvertently refreshes the page after submitting a web form.)
+    - Pagination approaches:
+        + Offset-Based Pagination
+            # How it works
+                ~ Input: page and per_page
+                ~ offset = (page - 1) * per_page <- calculates how many records to skip
+                ~ query - fetches the specific slice of data
+                    sa.select(Post).order_by(Post.timestamp.desc(), Post.id.desc()).offset(offset).limit(per_page)
+                ~ total_pages: session.scalar(sa.select(sa.func.count(Post.id)))
+            # Pros
+                Simple to understand and implement. Allows direct navigation to any page number.
+            # Cons
+                 For very large datasets, the offset can become inefficient as the database still processes all preceding rows. Data changes between requests can cause "drifting" (items appearing on multiple pages or being skipped).
+        + Keyset-Based Pagination
+            # How it works
+                ~ Input: 
+                    per_page
+                    movement: prev/next
+                    cursor (of first/last item displayed on the previous page) (ex: cursor_timestamp & cursor_id)
+
+                ~ Query next - fetching records after the specified cursor
+                    sa.select(Post).order_by(Post.timestamp.desc(), Post.id.desc()).where(
+                        sa.or_(
+                            Post.timestamp < last_timestamp,
+                            sa.and_(
+                                Post.timestamp == last_timestamp,
+                                Post.id < last_id
+                            )
+                        )
+                    )
+                ~ Query prev - fetching records after the specified cursor
+            # Pros
+                Highly performant for large datasets because it avoids OFFSET. Results are stable even if data changes (no drifting). Ideal for "Load More" or infinite scrolling.
+
+            # Cons
+                Cannot directly jump to arbitrary pages. More complex WHERE clauses (prev query).
+                Requires a unique and consistently sortable column (or combination of columns).
+                
+
 
     
 

@@ -48,6 +48,18 @@ class TestUserModel(unittest.TestCase):
         self.assertEqual(u1.count_following(), 0)
         self.assertEqual(u2.count_followers(), 0)
 
+
+class TestPostModel(unittest.TestCase):
+    def setUp(self):
+        self.app_context = app.app_context()
+        self.app_context.push()
+        db.create_all()
+
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()
+        self.app_context.pop()
+
     def test_get_posts(self):
         # create four users
         u1 = User(username="john", email="john@example.com")
@@ -81,10 +93,11 @@ class TestUserModel(unittest.TestCase):
         db.session.commit()
 
         # check the following posts of each user
-        f1 = u1.get_posts()
-        f2 = u2.get_posts()
-        f3 = u3.get_posts()
-        f4 = u4.get_posts()
+        db.session.scalars(Post.query_posts_of_user_and_following(u1.id)).all()
+        f1 = db.session.scalars(Post.query_posts_of_user_and_following(u1.id)).all()
+        f2 = db.session.scalars(Post.query_posts_of_user_and_following(u2.id)).all()
+        f3 = db.session.scalars(Post.query_posts_of_user_and_following(u3.id)).all()
+        f4 = db.session.scalars(Post.query_posts_of_user_and_following(u4.id)).all()
         self.assertEqual(f1, [p2, p4, p1])
         self.assertEqual(f2, [p2, p3])
         self.assertEqual(f3, [p3, p4])

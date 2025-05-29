@@ -8,7 +8,7 @@
     height="100"
   />
   <div class="user-details">
-    <h2>User: {{ user.get_display_name() }}</h2>
+    <h2>{{ user.get_display_name() }}</h2>
     {% if user.about_me %}
     <p class="user-detail-item">{{ user.about_me }}</p>
     {% endif %} {% if user.last_seen %}
@@ -34,6 +34,24 @@
 </section>
 
 <section class="posts">
-  {% for post in posts %} {% include '_post.html' %} {% endfor %}
+  <div id="posts-list"></div>
+
+  <div id="loading-indicator" class="loading-indicator hidden">
+    Loading more posts...
+  </div>
+
+  <div id="end-of-content" class="end-of-content hidden">
+    You've reached the end of the content.
+  </div>
+
+  <nav id="pagination-bar" class="hidden"></nav>
 </section>
+{% endblock %} {% block scripts %}
+<script>
+  const PER_PAGE = "{{ fetch_data_info.per_page }}";
+  const PAGINATION_TYPE = "{{ fetch_data_info.pagination_type }}";
+  const SEARCH_CONDITION = "{{ fetch_data_info.search_condition }}";
+  const USER_ID = "{{ user.id }}";
+</script>
+<script src="{{ url_for('static', filename='js/load_posts.js') }}"></script>
 {% endblock %}

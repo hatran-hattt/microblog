@@ -8,11 +8,8 @@ from wtforms import (
     TextAreaField,
 )
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+from app.constants import LengthValidation
 from app.models import User
-
-
-USER_NAME_MIN_LENGTH = 3
-USER_NAME_MAX_LENGTH = 80
 
 
 class LoginForm(FlaskForm):
@@ -20,7 +17,10 @@ class LoginForm(FlaskForm):
         "Username",
         validators=[
             DataRequired(),
-            Length(min=USER_NAME_MIN_LENGTH, max=USER_NAME_MAX_LENGTH),
+            Length(
+                min=LengthValidation.USER_NAME_MIN_LENGTH,
+                max=LengthValidation.USER_NAME_MAX_LENGTH,
+            ),
         ],
     )
     password = PasswordField("Password", validators=[DataRequired()])
@@ -34,7 +34,10 @@ class RegistrationForm(FlaskForm):
         "Username",
         validators=[
             DataRequired(),
-            Length(min=USER_NAME_MIN_LENGTH, max=USER_NAME_MAX_LENGTH),
+            Length(
+                min=LengthValidation.USER_NAME_MIN_LENGTH,
+                max=LengthValidation.USER_NAME_MAX_LENGTH,
+            ),
         ],
     )
     email = StringField("Email", validators=[DataRequired(), Email()])
@@ -65,3 +68,8 @@ class EditProfileForm(FlaskForm):
 
 class EmptyForm(FlaskForm):
     submit = SubmitField("Submit")
+
+
+class NewPostForm(FlaskForm):
+    content = TextAreaField("Content", validators=[DataRequired(), Length(max=256)])
+    submit = SubmitField("Post")

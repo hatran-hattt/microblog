@@ -13,8 +13,14 @@
     {% else %}
     <title>MICROBLOG</title>
     {% endif %}
-    <link rel="stylesheet" href=" ../static/css/common.css" />
-    <script src=" ../static/js/common.js" defer></script>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/common.css') }}"
+    />
+    <script
+      src="{{ url_for('static', filename='js/common.js') }}"
+      defer
+    ></script>
   </head>
   <body>
     <div class="container">
@@ -26,6 +32,7 @@
             {% if current_user.is_anonymous %}
             <li><a href="{{ url_for('login') }}">Login</a></li>
             {% else %}
+            <li><a href="{{ url_for('explore') }}">Explore</a></li>
             <li>
               <a href="{{ url_for('user', username=current_user.username) }}"
                 >Profile</a
@@ -51,11 +58,6 @@
         <p>© 2025 MICROBLOG</p>
       </footer>
     </div>
-    <script>
-      // Inline script for demonstration purposes
-      document.addEventListener("DOMContentLoaded", function () {
-        console.log("Document is ready!");
-      });
-    </script>
+    {% block scripts %}{% endblock %}
   </body>
 </html>

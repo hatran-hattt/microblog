@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from typing import Optional
+from flask import url_for
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from app import db
@@ -98,27 +99,6 @@ class User(UserMixin, db.Model):
         )
         return db.session.scalar(query)
 
-    def get_posts(self):
-
-        following_ids_subquery = (
-            sa.select(user_connection.c.following_id)
-            .where(user_connection.c.follower_id == self.id)
-            .subquery()
-        )
-
-        query = (
-            sa.select(Post)
-            .where(
-                sa.or_(
-                    Post.user_id == self.id,
-                    Post.user_id.in_(following_ids_subquery),
-                )
-            )
-            .order_by(Post.timestamp.desc())
-        )
-
-        return db.session.scalars(query).all()
-
 
 class Post(db.Model):
     id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
@@ -133,3 +113,74 @@ class Post(db.Model):
 
     def __repr__(self):
         return f"<Post {self.content}>"
+
+    # Helper method to serialize post to dictionary for JSON response
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "content": self.content,
+            "timestamp": self.timestamp.isoformat(),  # ISO 8601 format for easy JS parsing
+            "author": {
+                "avatar_url": self.author.get_avatar_url(50),
+                "user_url": url_for("user", username=self.author.username),
+                "display_name": (self.author.get_display_name()),
+            },
+        }
+
+    @classmethod
+    def query_all_posts(cls):
+        return sa.select(Post).order_by(Post.timestamp.desc(), Post.id.desc())
+
+    @classmethod
+    def query_posts_of_user(cls, user_id):
+        # Query - Select posts whose author are user
+        return (
+            sa.select(Post)
+            .where(Post.user_id == user_id)
+            .order_by(Post.timestamp.desc(), Post.id.desc())
+        )
+
+    @classmethod
+    def query_posts_of_user_and_following(cls, user_id):
+        # Subquery - Select user's following
+        subquery_following_ids = (
+            sa.select(user_connection.c.following_id)
+            .where(user_connection.c.follower_id == user_id)
+            .subquery()
+        )
+
+        # Query - Select posts whose author are following or user (order: newest)
+        return (
+            sa.select(Post)
+            .where(
+                sa.or_(
+                    Post.user_id == user_id,
+                    -Post.user_id.in_(subquery_following_ids),
+                )
+            )
+            .order_by(Post.timestamp.desc(), Post.id.desc())
+        )
+
+
+class QueryUtility:
+    @classmethod
+    def pagination_by_keyset(cls, base_query, per_page, cursor_timestamp, cursor_id):
+
+        if cursor_timestamp and cursor_id:
+            base_query = base_query.where(
+                sa.or_(
+                    Post.timestamp < cursor_timestamp,
+                    sa.and_(Post.timestamp == cursor_timestamp, Post.id < cursor_id),
+                )
+            )
+
+        return base_query.limit(per_page)
+
+    @classmethod
+    def pagination_by_offset(cls, base_query, per_page, page):
+        return base_query.offset((page - 1) * per_page).limit(per_page)
+
+    @classmethod
+    def count_total(cls, base_query):
+        query = sa.select(sa.func.count()).select_from(base_query.subquery())
+        return db.session.scalar(query)

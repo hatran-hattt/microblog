@@ -1,9 +1,17 @@
+import math
 from app import app
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, jsonify
 from app import db
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, EmptyForm
+from app.constants import NUM_POSTS_PER_PAGE, PaginationType, PostSearchCondition
+from app.forms import (
+    LoginForm,
+    RegistrationForm,
+    EditProfileForm,
+    EmptyForm,
+    NewPostForm,
+)
 from flask_login import current_user, login_user, logout_user, login_required
-from app.models import User, Post
+from app.models import QueryUtility, User, Post
 from urllib.parse import urlsplit
 import sqlalchemy as sa
 from datetime import datetime, timezone
@@ -16,16 +24,47 @@ def before_request():
         db.session.commit()
 
 
-@app.route("/")
-@app.route("/index")
+@app.route("/", methods=["GET", "POST"])
+@app.route("/index", methods=["GET", "POST"])
 @login_required
 def index():
+    form = NewPostForm()
+
+    if form.validate_on_submit():
+        post = Post(content=form.content.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash("Create post successully.", "success")
+        return redirect(
+            url_for("index")
+        )  # Post/Redirect/Get trich (avoids inserting duplicate posts when a user inadvertently refreshes the page after submitting a web form.)
 
     return render_template(
         "index.html",
         title="Home",
         user=current_user,
-        posts=current_user.get_posts(),
+        form=form,
+        fetch_data_info={
+            "per_page": NUM_POSTS_PER_PAGE,
+            "search_condition": PostSearchCondition.ALL,
+            "pagination_type": PaginationType.OFFSET,
+        },
+    )
+
+
+@app.route("/explore")
+@login_required
+def explore():
+
+    return render_template(
+        "index.html",
+        title="Explore",
+        user=current_user,
+        fetch_data_info={
+            "per_page": NUM_POSTS_PER_PAGE,
+            "search_condition": PostSearchCondition.CURRENT_USER_AND_FOLLOWING,
+            "pagination_type": PaginationType.KEYSET,
+        },
     )
 
 
@@ -124,8 +163,12 @@ def user(username):
         "user.html",
         title="User Info",
         user=user,
-        posts=get_posts_of_user(username),
         form=form,
+        fetch_data_info={
+            "per_page": NUM_POSTS_PER_PAGE,
+            "search_condition": PostSearchCondition.USER,
+            "pagination_type": PaginationType.KEYSET,
+        },
     )
 
 
@@ -184,10 +227,96 @@ def user_action(username, action):
     return redirect(url_for("index"))
 
 
-def get_posts_of_user(username):
-    user = User.query.filter(User.username == username).first()
-    if user is None:
-        return []
+@app.route("/api/posts")
+@login_required
+def api_posts():
 
-    posts = Post.query.filter(Post.user_id == user.id).all()
-    return posts
+    # Input
+    search_condition = request.args.get("search_condition", PostSearchCondition.ALL)
+    pagination_type = request.args.get("pagination_type", PaginationType.OFFSET)
+    flag_pagination_info = request.args.get("flag_pagination_info", True, type=bool)
+    per_page = request.args.get("per_page", NUM_POSTS_PER_PAGE, type=int)
+    user_id = request.args.get("user_id")
+
+    # Output
+    serialized_posts = None
+    pagination_info = {
+        # keyset
+        "has_more": None,
+        "next_cursor": None,
+        # offset
+        "total_records": None,
+        "total_page": None,
+    }
+
+    # Get base query
+    match search_condition:
+        case PostSearchCondition.ALL:
+            base_query = Post.query_all_posts()
+        case PostSearchCondition.CURRENT_USER_AND_FOLLOWING:
+            base_query = Post.query_posts_of_user_and_following(current_user.id)
+        case PostSearchCondition.USER:
+            if not user_id:
+                return jsonify({"error": "Query param 'user_id' is missing"}), 400
+            base_query = Post.query_posts_of_user(user_id)
+        case _:
+            return jsonify({"error": "Invalid query type"}), 400
+
+    # Pagination approach
+    match pagination_type:
+        case PaginationType.OFFSET:
+            # Input
+            page = request.args.get("page", 1, type=int)  # TODO test case not number
+
+            # Get pagination query (by offset)
+            query = QueryUtility.pagination_by_offset(base_query, per_page, page)
+
+            # Execute query
+            posts = db.session.scalars(query).all()
+
+            # Serialize posts to dictionaries
+            serialized_posts = [p.to_dict() for p in posts]
+
+            if flag_pagination_info:
+                total_records = QueryUtility.count_total(base_query)
+                pagination_info["total_records"] = total_records
+                pagination_info["total_page"] = math.ceil(total_records / per_page)
+        case PaginationType.KEYSET:
+            # Check input
+            cursor_timestamp_str = request.args.get("cursor_timestamp")
+            cursor_id = request.args.get("cursor_id")
+            cursor_timestamp = None
+            if cursor_timestamp_str:
+                try:
+                    cursor_timestamp = datetime.fromisoformat(cursor_timestamp_str)
+                except ValueError:
+                    return jsonify({"error": "Invalid timestamp format"}), 400
+
+            # Get pagination query (by keyset)
+            query = QueryUtility.pagination_by_keyset(
+                base_query, per_page + 1, cursor_timestamp, cursor_id
+            )
+
+            # Execute query
+            posts = db.session.scalars(query).all()
+
+            # Check next cursor
+            pagination_info["has_more"] = len(posts) > per_page
+            if pagination_info["has_more"]:
+                pagination_info["next_cursor"] = {
+                    "cursor_timestamp": posts[per_page - 1].timestamp.isoformat(),
+                    "cursor_id": posts[per_page - 1].id,
+                }
+
+            # Serialize posts to dictionaries
+            posts_to_return = posts[:per_page]
+            serialized_posts = [p.to_dict() for p in posts_to_return]
+        case _:
+            return jsonify({"error": "Invalid pagination type"}), 400
+
+    return jsonify(
+        {
+            "posts": serialized_posts,
+            "pagination_info": pagination_info if flag_pagination_info else None,
+        }
+    )

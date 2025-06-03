@@ -1,6 +1,7 @@
 from logging.handlers import RotatingFileHandler, SMTPHandler
 import os
 from flask import Flask
+from flask_mail import Mail
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -19,6 +20,8 @@ login = LoginManager(app)
 login.login_view = "login"
 login.login_message_category = "error"
 
+mail = Mail(app)
+
 if not app.debug:
     # Attach mail handler to app logger
     if app.config["MAIL_SERVER"]:
@@ -30,8 +33,8 @@ if not app.debug:
             secure = ()
         mail_handler = SMTPHandler(
             mailhost=(app.config["MAIL_SERVER"], app.config["MAIL_PORT"]),
-            fromaddr="no-reply@" + app.config["MAIL_SERVER"],
-            toaddrs=app.config["ADMINS"],
+            fromaddr=app.config["MAIL_ADMINS"][0],
+            toaddrs=app.config["MAIL_ADMINS"],
             subject="Microblog Failure",
             credentials=auth,
             secure=secure,
@@ -42,19 +45,20 @@ if not app.debug:
     # Attach file handler to app logger
     if not os.path.exists("logs"):
         os.mkdir("logs")
-        file_handler = RotatingFileHandler(
-            "logs/microblog.log", maxBytes=10240, backupCount=10
-        )
-        file_handler.setFormatter(
-            logging.Formatter(
-                "%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]"
-            )
-        )
-        file_handler.setLevel(logging.INFO)
-        app.logger.addHandler(file_handler)
 
-        app.logger.setLevel(logging.INFO)
-        app.logger.info("Microblog startup")
+    file_handler = RotatingFileHandler(
+        "logs/microblog.log", maxBytes=10240, backupCount=10
+    )
+    file_handler.setFormatter(
+        logging.Formatter(
+            "%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]"
+        )
+    )
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
+
+    app.logger.setLevel(logging.INFO)
+    app.logger.info("Microblog startup")
 
 
 # Provide user loader function for Flask-Login

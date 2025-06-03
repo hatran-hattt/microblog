@@ -322,7 +322,7 @@
                 + back_populates    # other side relationship name
     EmptyForm for follow/unfollow
 
-8. Pagination
+9. Pagination
     SQLAlchemy supports pagination natively with the db.paginate() function (return Pagination object)
     It works like db.session.scalars(), but with pagination built-in
         >>> query = sa.select(Post).order_by(Post.timestamp.desc())
@@ -331,7 +331,19 @@
         page: the page number, starting from 1
         per_page: the number of items per page
         error_out: an error flag. If True, when an out of range page is requested a 404 error will be automatically returned to the client. If False, an empty list will be returned for out of range pages.
-        
+
+
+10. Email
+    - Packages: flask-mail, pyjwt
+    - Flow
+        + ForgotPassForm(email) -> RouteForgotPass(sendmail, link jwt(user_id, exp))
+        + Open link -> RouteResetPass(valid jwt, get user, show/validate ResetPassForm)
+    - Notes:
+        + mail url: _external=True (<a href="{{ url_for('reset_password', token=token, _external=True) }}">)
+        + [TODO] Concurrency handle
+            (1) For production: Use a Task Queue (Celery, RQ). This is the most robust, scalable, and reliable approach.
+            (2) For async/await Flask applications: Use asyncio.to_thread().
+            (3) For simple background tasks (less critical): Use concurrent.futures.ThreadPoolExecutor or a direct threading.Thread
 # Others
     - Externally Visible Server: flask run --host=0.0.0.0
     - Generating Links: url_for
@@ -375,7 +387,11 @@
             # Cons
                 Cannot directly jump to arbitrary pages. More complex WHERE clauses (prev query).
                 Requires a unique and consistently sortable column (or combination of columns).
-                
+    - Flask itself is fundamentally a WSGI (Web Server Gateway Interface) framework, which is synchronous.
+    However, modern Flask versions (since 2.0) allow you to define async def view functions to take advantage of asynchronous I/O (like with asyncio) when served by an ASGI (Asynchronous Server Gateway Interface) server.
+    The 'async' extra provides the libraries Flask needs to bridge its WSGI core with async def views and ASGI servers.
+        pip install Flask[async]
+
 
 
     

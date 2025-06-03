@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
+from time import time
 from typing import Optional
 from flask import url_for
+import jwt
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from app import db
@@ -8,6 +10,9 @@ from app import login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from hashlib import md5
+
+from app import app
+from app.constants import JWT_ENCODE_ALGORITHM
 
 
 # https://docs.sqlalchemy.org/en/20/orm/join_conditions.html#self-referential-many-to-many-relationship
@@ -98,6 +103,24 @@ class User(UserMixin, db.Model):
             self.following.select().subquery()
         )
         return db.session.scalar(query)
+
+    def get_reset_password_token(self, expires_in=300):
+        return jwt.encode(
+            {"reset_password": self.id, "exp": time() + expires_in},
+            app.config["SECRET_KEY"],
+            JWT_ENCODE_ALGORITHM,
+        )
+
+    @staticmethod
+    def verify_reset_password_token(token):
+        try:
+            user_id = jwt.decode(token, app.config["SECRET_KEY"], JWT_ENCODE_ALGORITHM)[
+                "reset_password"
+            ]
+        except:
+            return None
+
+        return db.session.get(User, user_id)
 
 
 class Post(db.Model):

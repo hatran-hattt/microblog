@@ -5,6 +5,8 @@ class LengthValidation:
 
 NUM_POSTS_PER_PAGE = 10
 
+JWT_ENCODE_ALGORITHM = "HS256"
+
 
 class PostSearchCondition:
     ALL = "all"

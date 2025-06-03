@@ -49,7 +49,7 @@ def index():
         form=form,
         fetch_data_info={
             "per_page": NUM_POSTS_PER_PAGE,
-            "search_condition": PostSearchCondition.ALL,
+            "search_condition": PostSearchCondition.CURRENT_USER_AND_FOLLOWING,
             "pagination_type": PaginationType.OFFSET,
         },
     )
@@ -65,7 +65,7 @@ def explore():
         user=current_user,
         fetch_data_info={
             "per_page": NUM_POSTS_PER_PAGE,
-            "search_condition": PostSearchCondition.CURRENT_USER_AND_FOLLOWING,
+            "search_condition": PostSearchCondition.ALL,
             "pagination_type": PaginationType.KEYSET,
         },
     )

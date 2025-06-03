@@ -87,7 +87,7 @@ if (PAGINATION_TYPE == "keyset") {
 
 // ------OFFSET APPROACH-----Start
 function loadPosts_offset(page) {
-    let url = `/api/posts?pagination_type=offset&per_page=${PER_PAGE}&page=${page}`;
+    let url = `/api/posts?search_condition=${SEARCH_CONDITION}&pagination_type=offset&per_page=${PER_PAGE}&page=${page}`;
     if (USER_ID) {
         url += `&user_id=${USER_ID}`
     }

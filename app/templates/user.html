@@ -20,7 +20,7 @@
         {% endif %}
         {# Last Seen #}
         {% if user.last_seen %}
-        <p class="text-muted small mb-2">Last seen on: {{ user.last_seen }}</p>
+        <p class="text-muted small mb-2" id="last-seen"></p>
         {% endif %}
 
         {# Follower/Following Counts #}
@@ -63,6 +63,17 @@
   const PAGINATION_TYPE = "{{ fetch_data_info.pagination_type }}";
   const SEARCH_CONDITION = "{{ fetch_data_info.search_condition }}";
   const USER_ID = "{{ user.id }}";
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // Handle last seen timestamp
+    const lastSeenTimestamp = "{{ user.last_seen }}";
+    const lastSeenElement = document.getElementById("last-seen");
+    if (lastSeenElement) {
+      lastSeenElement.textContent = `Last seen on: ${new Date(
+        lastSeenTimestamp
+      ).toLocaleString()}`;
+    }
+  });
 </script>
 <script src="{{ url_for('static', filename='js/load_posts.js') }}"></script>
 {% endblock scripts %}

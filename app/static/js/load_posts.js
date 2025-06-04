@@ -178,7 +178,7 @@ function createPostElement(post) {
                         </span>
                     </h6>
                     <p class="text-muted small mb-1">
-                        Posted at ${post.timestamp}
+                        Posted at ${(new Date(post.timestamp)).toLocaleString()}
                     </p>
                     <p class="mb-0">${post.content}</p>
                 </div>

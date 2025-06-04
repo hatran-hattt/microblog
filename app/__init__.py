@@ -2,6 +2,7 @@ from logging.handlers import RotatingFileHandler, SMTPHandler
 import os
 from flask import Flask
 from flask_mail import Mail
+from app.constants import FlashMsgType
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -18,7 +19,7 @@ migrate = Migrate(app, db)
 # Initialize the login manager and set the login view
 login = LoginManager(app)
 login.login_view = "login"
-login.login_message_category = "error"
+login.login_message_category = FlashMsgType.DANGER
 
 mail = Mail(app)
 

@@ -71,7 +71,7 @@ class EmptyForm(FlaskForm):
 
 
 class NewPostForm(FlaskForm):
-    content = TextAreaField("Content", validators=[DataRequired(), Length(max=256)])
+    content = TextAreaField("", validators=[DataRequired(), Length(max=256)])
     submit = SubmitField("Post")
 
 

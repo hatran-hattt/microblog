@@ -1,0 +1,67 @@
+/* custom-theme.css */
+
+:root {
+  /* Green Light Palette */
+
+  /* Primary: A vibrant, standard green for main actions and branding */
+  --bs-primary: #28a745; /* A strong green, similar to Bootstrap's default success */
+  --bs-primary-rgb: 40, 167, 69;
+
+  /* Secondary: A slightly softer or complementary green */
+  --bs-secondary: #66bb6a; /* A lighter, more muted green */
+  --bs-secondary-rgb: 102, 187, 106;
+
+  /* Light: As requested, a very pale, subtle green */
+  --bs-light: #e8f5e9; /* A very light, almost white green */
+  --bs-light-rgb: 232, 245, 233;
+
+  /* Dark: A deep, complementary dark color for good contrast */
+  --bs-dark: #263238; /* A very dark bluish-gray */
+  --bs-dark-rgb: 38, 50, 56;
+
+  /* Info: Often a blue, for informational alerts */
+  --bs-info: #03a9f4; /* A light blue */
+  --bs-info-rgb: 3, 169, 244;
+
+  /* Success: Can be the primary green or a slightly different shade */
+  --bs-success: var(--bs-primary); /* Using the primary green for success */
+  --bs-success-rgb: var(--bs-primary-rgb);
+
+  /* Danger: Typically a red for errors or critical actions */
+  --bs-danger: #ef5350; /* A slightly softer red */
+  --bs-danger-rgb: 239, 83, 80;
+
+  /* Warning: Typically an orange/yellow for warnings */
+  --bs-warning: #ffca28; /* A standard amber yellow */
+  --bs-warning-rgb: 255, 202, 40;
+
+  /* Text and Link Colors (adjust as needed for contrast) */
+  --bs-body-color: #333; /* Default text color */
+  --bs-link-color: var(
+    --bs-primary
+  ); /* Links will use your new primary green */
+  --bs-link-hover-color: darken(
+    var(--bs-primary),
+    10%
+  ); /* (Note: darken is a Sass function, for plain CSS you'd define a specific hex or use filter) */
+}
+
+/* If you need a hover color for links in plain CSS, you might add: */
+a {
+  transition: color 0.3s ease; /* Smooth transition on hover */
+}
+a:hover {
+  color: #1e7033 !important; /* A slightly darker shade of your primary green for hover */
+}
+
+/* Example: Apply your new light color to the body background */
+body {
+  background-color: var(--bs-light);
+}
+
+/* Example: Ensure text on dark backgrounds is legible */
+.bg-dark {
+  color: var(
+    --bs-white
+  ); /* Ensure text is white or very light on dark backgrounds */
+}

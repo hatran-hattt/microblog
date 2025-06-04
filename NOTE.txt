@@ -344,6 +344,18 @@
             (1) For production: Use a Task Queue (Celery, RQ). This is the most robust, scalable, and reliable approach.
             (2) For async/await Flask applications: Use asyncio.to_thread().
             (3) For simple background tasks (less critical): Use concurrent.futures.ThreadPoolExecutor or a direct threading.Thread
+
+
+11. Bootstrap
+    - Some components:
+        Alert msg
+        Form
+        Card
+        ...
+    - Custom collor theme
+
+
+
 # Others
     - Externally Visible Server: flask run --host=0.0.0.0
     - Generating Links: url_for
@@ -395,6 +407,10 @@
 
 
     
+# Note NG
+    - Edit profile -> input empty -> submit ok
+
+
 
 
 

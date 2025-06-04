@@ -24,7 +24,7 @@ async function loadPosts_keyset() {
     }
 
     isLoading = true;
-    loadingIndicator.classList.remove('hidden');
+    loadingIndicator.classList.remove('d-none');
 
     let url = `/api/posts?search_condition=${SEARCH_CONDITION}&pagination_type=keyset&per_page=${PER_PAGE}`;
     if (USER_ID) {
@@ -50,7 +50,7 @@ async function loadPosts_keyset() {
         hasMore = data.pagination_info.has_more;      // Update hasMore flag
 
         if (!hasMore) {
-            endOfContent.classList.remove('hidden'); // Show end message
+            endOfContent.classList.remove('d-none'); // Show end message
         }
 
     } catch (error) {
@@ -58,7 +58,7 @@ async function loadPosts_keyset() {
         // Optionally display an error message to the user
     } finally {
         isLoading = false;
-        loadingIndicator.classList.add('hidden');
+        loadingIndicator.classList.add('d-none');
     }
 }
 
@@ -102,20 +102,57 @@ function loadPosts_offset(page) {
             renderPagination(data.pagination_info, page);
         });
 }
-function renderPagination(pagination_info, currentPage) {
+function renderPagination(pagination_info, current_page) {
     const paginationBar = document.getElementById('pagination-bar');
     paginationBar.classList.remove('hidden');
-    if (!pagination_info || !pagination_info.total_page) {
+    if (!pagination_info || !pagination_info.total_pages) {
         paginationBar.innerHTML = "";
         return;
     }
-    let html = '<ul class="pagination">';
-    for (let p = 1; p <= pagination_info.total_page; p++) {
-        html += `<li${p === currentPage ? ' class="active"' : ''}>
-            <a href="#" onclick="loadPosts_offset(${p}); return false;">${p}</a>
+
+    // Pagination infos
+    let total_pages = pagination_info.total_pages;
+    let has_prev = current_page > 1
+    let has_next = current_page < total_pages
+
+    // Determine the start and end of the visible page range
+    const pages_to_show = 4;
+    let start_page = current_page - (pages_to_show / 2)
+    let end_page = start_page + pages_to_show - 1
+
+    // Adjust start_page if it goes below 1 
+    if (start_page < 1) {
+        start_page = 1
+        end_page = pages_to_show // Ensure we still show 4 pages if possible
+    }
+
+    // Adjust end_page if it exceeds total_pages
+    if (end_page > total_pages) {
+        end_page = total_pages
+        start_page = total_pages - pages_to_show + 1 // Adjust start_page to keep 4 pages if possible
+        // Handle case where total pages < pages_to_show
+        if (start_page < 1) {
+            start_page = 1
+        }
+    }
+
+    let prevOnclick = `onclick="loadPosts_offset(${current_page - 1}); return false;"`;
+    let nextOnclick = `onclick="loadPosts_offset(${current_page + 1}); return false;"`;
+    let html = `<ul class="pagination justify-content-center">
+                    <li class="page-item ${has_prev ? '' : ' disabled'}">
+                        <a class="page-link" href="#" tabindex="-1" 
+                            ${has_prev ? prevOnclick : ' aria-disabled="true"'}>Previous</a>
+                    </li>`;
+    for (let p = start_page; p <= end_page; p++) {
+        html += `<li class="page-item ${p === current_page ? ' active' : ''}">
+            <a class="page-link" href="#" onclick="loadPosts_offset(${p}); return false;">${p}</a>
         </li>`;
     }
-    html += '</ul>';
+    html += `<li class="page-item ${has_next ? '' : ' disabled'}">
+                <a class="page-link" href="#"
+                    ${has_next ? nextOnclick : ' aria-disabled="true"'}>Next</a>
+            </li>
+        </ul>`;
     paginationBar.innerHTML = html;
 }
 // ------OFFSET APPROACH-----End
@@ -125,24 +162,29 @@ function createPostElement(post) {
     const div = document.createElement('div');
     div.className = 'post';
     div.innerHTML = `
-        <img
-            src="${post.author.avatar_url}"
-            alt="Post Author Avatar"
-            class="post-avatar"
-            width="50"
-            height="50"
-        />
-        <div class="post-content">
-            <p>
-            <span class="author-name"
-                ><a href="${post.author.user_url}"
-                >${post.author.display_name}</a
-                ></span
-            >
-            </p>
-            <p class="post-timestamp">Posted at ${post.timestamp}</p>
-            <p>${post.content}</p>
+        <div class="card p-3 mb-1">
+        <div class="row g-0 align-items-start">
+            <div class="col-auto">
+                <img src="${post.author.avatar_url}" 
+                    alt="Post Author Avatar" 
+                    class="rounded-circle me-3 mt-1"
+                    width="50" height="50">
+            </div>
+            <div class="col">
+                <div class="card-body p-0">
+                    <h6 class="mb-0">
+                        <span class="fw-bold">
+                            <a href="${post.author.user_url}" class="text-decoration-none text-primary">${post.author.display_name}</a>
+                        </span>
+                    </h6>
+                    <p class="text-muted small mb-1">
+                        Posted at ${post.timestamp}
+                    </p>
+                    <p class="mb-0">${post.content}</p>
+                </div>
+            </div>
         </div>
-    `;
+    </div>
+    `
     return div;
 }

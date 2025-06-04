@@ -17,3 +17,8 @@ class PostSearchCondition:
 class PaginationType:
     OFFSET = "offset"
     KEYSET = "keyset"
+
+
+class FlashMsgType:
+    SUCCESS = "success"
+    DANGER = "danger"

@@ -1,52 +1,63 @@
-{% extends "layout.html" %} {% block content %}
-<section class="user-profile">
-  <img
-    src="{{ user.get_avatar_url(100) }}"
-    alt="User Avatar"
-    class="avatar"
-    width="100"
-    height="100"
-  />
-  <div class="user-details">
-    <h2>{{ user.get_display_name() }}</h2>
-    {% if user.about_me %}
-    <p class="user-detail-item">{{ user.about_me }}</p>
-    {% endif %} {% if user.last_seen %}
-    <p class="user-detail-item">Last seen on: {{ user.last_seen }}</p>
-    {% endif %}
-    <p>
-      {{ user.count_followers() }} followers, {{ user.count_following() }}
-      following
-    </p>
-    {% if user == current_user %}
-    <a href="{{ url_for('edit_profile') }}">Edit your profile</a>
-    {% else %} {% with user_action = "follow" if not
-    current_user.is_following(user) else "unfollow" %}
-    <form
-      action="{{ url_for('user_action', username=user.username, action=user_action) }}"
-      method="post"
-      novalidate
-    >
-      {{ form.hidden_tag() }} {{ form.submit(value=user_action) }}
-    </form>
-    {% endwith %} {% endif %}
+{% extends "layout.html" %}
+{% block content %}
+<section class="mb-4">
+  <div class="card p-3"> {# Using card for a distinct block, p-3 for padding inside card #}
+    <div class="d-flex align-items-start"> {# Uses flexbox for avatar next to details, aligns items to top #}
+      {# User Avatar #}
+      <img
+        src="{{ user.get_avatar_url(100) }}"
+        alt="User Avatar"
+        class="rounded-circle me-3"
+        width="100"
+        height="100"
+      />
+      <div class="flex-grow-1">
+        {# Display Name #}
+        <h2 class="mb-2">{{ user.get_display_name() }}</h2>
+        {# User Bio #}
+        {% if user.about_me %}
+        <p class="text-muted small mb-2">{{ user.about_me }}</p>
+        {% endif %}
+        {# Last Seen #}
+        {% if user.last_seen %}
+        <p class="text-muted small mb-2">Last seen on: {{ user.last_seen }}</p>
+        {% endif %}
+
+        {# Follower/Following Counts #}
+        <p class="text-muted mb-3">
+          {{ user.count_followers() }} followers, {{ user.count_following() }}
+          following
+        </p>
+
+        {% if user == current_user %}
+        {# Edit Profile Link #}
+        <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary btn-sm">Edit your profile</a>
+        {% else %}
+
+        {# Follow/Unfollow Form #}
+        {% with user_action = "follow" if not
+        current_user.is_following(user) else "unfollow" %}
+        <form
+          action="{{ url_for('user_action', username=user.username, action=user_action) }}"
+          method="post"
+          novalidate
+        >
+          {{ form.hidden_tag() }} {{ form.submit(value=user_action, class="btn btn-outline-primary btn-sm") }}
+        </form>
+        {% endwith %}
+        {% endif %}
+      </div>
+    </div>
   </div>
 </section>
 
-<section class="posts">
+<section class="posts mb-5">
+  <h4 class="mb-3">Recent Posts</h4>
   <div id="posts-list"></div>
-
-  <div id="loading-indicator" class="loading-indicator hidden">
-    Loading more posts...
-  </div>
-
-  <div id="end-of-content" class="end-of-content hidden">
-    You've reached the end of the content.
-  </div>
-
-  <nav id="pagination-bar" class="hidden"></nav>
+  {% include "_pagination.html" %}
 </section>
-{% endblock %} {% block scripts %}
+{% endblock content %}
+{% block scripts %}
 <script>
   const PER_PAGE = "{{ fetch_data_info.per_page }}";
   const PAGINATION_TYPE = "{{ fetch_data_info.pagination_type }}";
@@ -54,4 +65,4 @@
   const USER_ID = "{{ user.id }}";
 </script>
 <script src="{{ url_for('static', filename='js/load_posts.js') }}"></script>
-{% endblock %}
+{% endblock scripts %}

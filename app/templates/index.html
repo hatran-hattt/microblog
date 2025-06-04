@@ -1,31 +1,20 @@
-{% extends "layout.html" %} {% block content %}
-<h3>Hi {{ user.get_display_name() }}</h3>
+{% extends "layout.html" %}
+{% import "form_macro.html" as form_macro %}
+{% block content %}
+<h3 class="mb-4">Hi {{ user.get_display_name() }}</h3>
 
 {% if form %}
-<section>
-  <h5>Write some things to post!</h5>
-  <form action="" method="post" novalidate>
-    {{ form.hidden_tag() }} {{ form.content.label }}<br />
-    {{ form.content(cols=50, rows=5) }}<br />
-    {{ form.submit() }}
-  </form>
+<section class="mb-5">
+  <h5 class="mb-3">Write some things to post!</h5>
+  {{ form_macro.quick_form(form) }}
 </section>
 {% endif %}
-<hr />
-<section class="posts">
+<section class="posts mb-5"">
   <div id="posts-list"></div>
-
-  <div id="loading-indicator" class="loading-indicator hidden">
-    Loading more posts...
-  </div>
-
-  <div id="end-of-content" class="end-of-content hidden">
-    You've reached the end of the content.
-  </div>
-
-  <nav id="pagination-bar" class="hidden"></nav>
+  {% include "_pagination.html" %}
 </section>
-{% endblock %} {% block scripts %}
+{% endblock content %}
+{% block scripts %}
 <script>
   const PER_PAGE = "{{ fetch_data_info.per_page }}";
   const PAGINATION_TYPE = "{{ fetch_data_info.pagination_type }}";
@@ -33,4 +22,4 @@
   const USER_ID = null;
 </script>
 <script src="{{ url_for('static', filename='js/load_posts.js') }}"></script>
-{% endblock %}
+{% endblock scripts %}

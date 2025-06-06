@@ -1,16 +1,16 @@
 <div id="loading-indicator" class="text-center text-primary py-3 d-none">
   {# Bootstrap Spinner for visual feedback #}
   <div class="spinner-border text-primary" role="status">
-    <span class="visually-hidden">Loading...</span>
+    <span class="visually-hidden">{{ _("Loading...") }}</span>
   </div>
-  <p class="mt-2 mb-0">Loading more posts...</p>
+  <p class="mt-2 mb-0">{{ _("Loading more posts...") }}</p>
   {# mt-2 for spacing, mb-0 to remove default p margin #}
 </div>
 
 <div id="end-of-content" class="text-center text-muted py-4 d-none">
   <hr class="my-3" />
   {# Horizontal rule for visual separation, my-3 for margin #}
-  <p class="mb-0">You've reached the end of the content.</p>
+  <p class="mb-0">{{ _("You've reached the end of the content.") }}</p>
 </div>
 
 <nav id="pagination-bar" class="hidden"></nav>

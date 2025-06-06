@@ -355,6 +355,53 @@
     - Custom collor theme
 
 
+12. DateTime
+    new Date(timestamp)).toLocaleString()
+
+13. Internationalization and Localization (commonly abbreviated I18n and L10n)
+    Package: flask-babel
+    Flow
+        (0) Init babel instance (with locale_selector, timezone_selector...)
+        (1) Preparation (Marking Strings): use _()
+            # with param: flash(f'User {username} not found.') -> flash(_('User %(username)s not found.', username=username))
+            # lazy (Some string literals are assigned outside a web request, usually when the application is starting up, so at the time these texts are evaluated there is no way to know what language to use. An example of this are the labels associated with form fields. The only solution to handle those texts is to find a way to delay the evaluation of the strings until they are used, which is going to be under an actual request)
+                lazy_gettext('...')
+                ex: LoginForm label
+            ----------
+            Common Places to Use lazy_gettext
+            You should use lazy_gettext (_l) for any strings that are:
+
+            Defined at the module level:
+                Flask-WTF form labels (as shown above).
+                Flask-Login messages (e.g., login_manager.login_message = _l("Please log in...")).
+                Any global variables or constants that hold translatable strings.
+            Strings stored in database models: If you're storing base strings in your database that you later want to translate, they are typically lazy-loaded.
+                For strings defined inside functions that are called during an active request (e.g., inside a Flask view function, or within a before_request handler after the locale has been set), you can safely use _().
+
+
+        (2) Extraction (xgettext / pybabel extract)
+            - babel.cfg: configuration file that tells pybabel what files should be scanned for translatable texts
+            - Use command to finds all marked strings and extracts them into a Portable Object Template (.pot) file. This file contains the original strings and serves as a template for all translations.
+                "pybabel extract -F babel.cfg -k _l -o messages.pot ."
+        (3) Initialization/Merging (msginit, msgmerge / pybabel init, pybabel update):
+            - For each target language (e.g., Spanish, French), a Portable Object (.po) file is created from the .pot template using msginit (or pybabel init).
+                This file contains the original strings and empty slots for their translations.
+                "pybabel init -i messages.pot -d app/translations -l jp"
+            - If the source code changes and new strings are added or old ones removed, the .po files are updated using msgmerge (or pybabel update),
+                which merges the new .pot content into existing .po files, keeping existing translations and marking new or changed entries.
+                "pybabel update -i messages.pot -d app/translations"
+        (4) Translation (Human Process): work on the .po files
+        (5) Compilation (msgfmt / pybabel compile):
+            Once translations are complete, the .po files are compiled into Machine Object (.mo) files using msgfmt (or pybabel compile).
+            .mo files are binary, optimized for fast lookup by the application at runtime.
+                "pybabel compile -d app/translations"
+    Command-Line Enhancements
+        Package Click is a Python package for creating beautiful command line interfaces
+        (Flask relies on Click for all its command-line operations)
+        flask translate init LANG to add a new language
+        flask translate update to update all language repositories
+        flask translate compile to compile all language repositories
+        
 
 # Others
     - Externally Visible Server: flask run --host=0.0.0.0
@@ -407,8 +454,11 @@
 
 
     
-# Note NG
-    - Edit profile -> input empty -> submit ok
+# Note Improvement
+    - Edit profile function: if input empty, not allow submit
+    - Internationalization function: handle for
+        + Form's validation message
+        + Client-rendered UI
 
 
 

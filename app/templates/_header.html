@@ -26,25 +26,25 @@
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           {# me-auto pushes items to the left, or ms-auto for right #}
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+            <a class="nav-link" href="{{ url_for('index') }}">{{ _("Home") }}</a>
           </li>
           {% if current_user.is_anonymous %}
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+            <a class="nav-link" href="{{ url_for('login') }}">{{ _("Login") }}</a>
           </li>
           {% else %}
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('explore') }}">Explore</a>
+            <a class="nav-link" href="{{ url_for('explore') }}">{{ _("Explore") }}</a>
           </li>
           <li class="nav-item">
             <a
               class="nav-link"
               href="{{ url_for('user', username=current_user.username) }}"
-              >Profile</a
+              >{{ _("Profile") }}</a
             >
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+            <a class="nav-link" href="{{ url_for('logout') }}">{{ _("Logout") }}</a>
           </li>
           {% endif %}
         </ul>

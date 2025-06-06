@@ -1,4 +1,4 @@
 {% extends "layout.html" %} {% block content %}
-<h1>Not Found</h1>
-<p><a href="{{ url_for('index') }}">Back to Home Page</a></p>
+<h1>{{ _("Not Found") }}</h1>
+<p><a href="{{ url_for('index') }}">{{ _("Back to Home Page") }}</a></p>
 {% endblock %}

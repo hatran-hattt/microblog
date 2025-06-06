@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 {% import "form_macro.html" as form_macro %}
 {% block content %}
-<h3 class="mb-4">Hi {{ user.get_display_name() }}</h3>
+<h3 class="mb-4">{{ _("Hi") }} {{ user.get_display_name() }}</h3>
 
 {% if form %}
 <section class="mb-5">
-  <h5 class="mb-3">Write some things to post!</h5>
+  <h5 class="mb-3">{{ _("Write some things to post!") }}</h5>
   {{ form_macro.quick_form(form) }}
 </section>
 {% endif %}

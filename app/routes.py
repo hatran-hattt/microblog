@@ -23,6 +23,7 @@ from app.models import QueryUtility, User, Post
 from urllib.parse import urlsplit
 import sqlalchemy as sa
 from datetime import datetime, timezone
+from flask_babel import _
 
 
 @app.before_request
@@ -42,7 +43,7 @@ def index():
         post = Post(content=form.content.data, author=current_user)
         db.session.add(post)
         db.session.commit()
-        flash("Create post successully.", FlashMsgType.SUCCESS)
+        flash(_("Create post successully."), FlashMsgType.SUCCESS)
         return redirect(
             url_for("index")
         )  # Post/Redirect/Get trich (avoids inserting duplicate posts when a user inadvertently refreshes the page after submitting a web form.)
@@ -93,7 +94,7 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
-            flash("Invalid username or password", FlashMsgType.DANGER)
+            flash(_("Invalid username or password"), FlashMsgType.DANGER)
             return redirect(url_for("login"))
 
         login_user(user, remember=form.remember_me.data)
@@ -151,7 +152,9 @@ def register():
         )  # The reason Post object was saved even without explicit session.add(post) or cascade="all" is due to the default save-update cascade behavior of SQLAlchemy relationships. When post3 was assigned to user2.posts, and user2 was added to the session, SQLAlchemy's object graph traversal during the flush detected post3 as a new, related object and automatically included it in the transaction for saving. This automatic behavior is convenient but can sometimes obscure the underlying session management if you're not aware of the default cascade rules.
         db.session.commit()
 
-        flash("Congratulations, you are now a registered user!", FlashMsgType.SUCCESS)
+        flash(
+            _("Congratulations, you are now a registered user!"), FlashMsgType.SUCCESS
+        )
         return redirect(url_for("login"))
 
     # Render the registration template with the form
@@ -189,7 +192,7 @@ def edit_profile():
         current_user.fullname = form.fullname.data
         current_user.about_me = form.about_me.data
         db.session.commit()
-        flash("Your changes have been saved.", FlashMsgType.SUCCESS)
+        flash(_("Your changes have been saved."), FlashMsgType.SUCCESS)
         return redirect(url_for("edit_profile"))
 
     if request.method == "GET":
@@ -209,25 +212,28 @@ def user_action(username, action):
         # Case user exists
         user = User.query.filter(User.username == username).first()
         if user is None:
-            flash("User not found.", FlashMsgType.DANGER)
+            flash(
+                _("User %(username)s not found.", username=username),
+                FlashMsgType.DANGER,
+            )
             return redirect(url_for("index"))
 
         # Case is current user
         if user == current_user:
-            flash("Can not follow/unfollow yourself.", FlashMsgType.DANGER)
+            flash(_("Can not follow/unfollow yourself."), FlashMsgType.DANGER)
             return redirect(url_for("user", username=username))
 
         # Case action invalid
         if action != "follow" and action != "unfollow":
-            flash("Action invalid.", FlashMsgType.DANGER)
+            flash(_("Action invalid."), FlashMsgType.DANGER)
             return redirect(url_for("user", username=username))
 
         # Case valid
         if action == "follow":
-            flash("Follow successfully.", FlashMsgType.SUCCESS)
+            flash(_("Follow successfully."), FlashMsgType.SUCCESS)
             current_user.follow(user)
         else:
-            flash("Unfollow successfully.", FlashMsgType.SUCCESS)
+            flash(_("Unfollow successfully."), FlashMsgType.SUCCESS)
             current_user.unfollow(user)
         db.session.commit()
         return redirect(url_for("user", username=username))
@@ -245,7 +251,8 @@ async def forgot_password():
         if user:
             await send_password_reset_email_asyncio(user)
         flash(
-            "Reset password mail has been sent. Please check your mailbox ", "success"
+            _("Reset password mail has been sent. Please check your mailbox"),
+            "success",
         )
 
     return render_template("forgot_password.html", title="Forgot Password", form=form)
@@ -259,7 +266,8 @@ def reset_password(token):
     user = User.verify_reset_password_token(token)
     if not user:
         flash(
-            "Reset password link is incorrect or has been expired!", FlashMsgType.DANGER
+            _("Reset password link is incorrect or has been expired!"),
+            FlashMsgType.DANGER,
         )
         return redirect(url_for("index"))
 
@@ -268,7 +276,7 @@ def reset_password(token):
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
-        flash("Change password successfully!", FlashMsgType.SUCCESS)
+        flash(_("Change password successfully!"), FlashMsgType.SUCCESS)
         return redirect(url_for("login"))
     return render_template("reset_password.html", title="Reset password", form=form)
 

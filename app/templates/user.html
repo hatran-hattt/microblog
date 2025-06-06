@@ -20,18 +20,20 @@
         {% endif %}
         {# Last Seen #}
         {% if user.last_seen %}
-        <p class="text-muted small mb-2" id="last-seen"></p>
+        <p class="text-muted small mb-2" id="last-seen">{{ _("Last seen on: ") }}</p>
         {% endif %}
 
         {# Follower/Following Counts #}
         <p class="text-muted mb-3">
-          {{ user.count_followers() }} followers, {{ user.count_following() }}
-          following
+          {{ _("%(num_followers)s followers , %(num_following)s following",
+            num_followers=user.count_followers(),
+            num_following=user.count_following())
+          }}
         </p>
 
         {% if user == current_user %}
         {# Edit Profile Link #}
-        <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary btn-sm">Edit your profile</a>
+        <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary btn-sm">{{ _("Edit your profile") }}</a>
         {% else %}
 
         {# Follow/Unfollow Form #}
@@ -52,7 +54,7 @@
 </section>
 
 <section class="posts mb-5">
-  <h4 class="mb-3">Recent Posts</h4>
+  <h4 class="mb-3">{{ _("Recent Posts") }}</h4>
   <div id="posts-list"></div>
   {% include "_pagination.html" %}
 </section>
@@ -69,7 +71,7 @@
     const lastSeenTimestamp = "{{ user.last_seen }}";
     const lastSeenElement = document.getElementById("last-seen");
     if (lastSeenElement) {
-      lastSeenElement.textContent = `Last seen on: ${new Date(
+      lastSeenElement.textContent += `${new Date(
         lastSeenTimestamp
       ).toLocaleString()}`;
     }

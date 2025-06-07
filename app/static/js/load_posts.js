@@ -159,6 +159,20 @@ function renderPagination(pagination_info, current_page) {
 
 // Function to create a post HTML element
 function createPostElement(post) {
+
+    let translateLink = "";
+    if (post.language && post.language.split('-')[0] != LOCALE.split('-')[0]) {
+        translateLink = `<br>
+                        <span id="translation${post.id}">
+                            <a href="javascript:translate(
+                                    'post${post.id}',
+                                    'translation${post.id}',
+                                    '${post.language}',
+                                    '${LOCALE}'
+                                );">${STR_TRANSLATE}</a>
+                        </span>`;
+    }
+
     const div = document.createElement('div');
     div.className = 'post';
     div.innerHTML = `
@@ -180,11 +194,28 @@ function createPostElement(post) {
                     <p class="text-muted small mb-1">
                         Posted at ${(new Date(post.timestamp)).toLocaleString()}
                     </p>
-                    <p class="mb-0">${post.content}</p>
+                    <p id="post${post.id}" class="mb-0">${post.content}</p>
+                    ${translateLink}
                 </div>
             </div>
         </div>
     </div>
     `
     return div;
+}
+
+async function translate(sourceElem, targetElem, sourceLang, targetLang) {
+    document.getElementById(targetElem).innerHTML =
+        `<img src="${LOADING_GIF_URL}" style="width: 50px; height: auto;">`;
+    const response = await fetch('/api/translate', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json; charset=utf-8'},
+        body: JSON.stringify({
+            text: document.getElementById(sourceElem).innerText,
+            source_language: sourceLang,
+            target_language: targetLang
+        })
+    })
+    const data = await response.json();
+    document.getElementById(targetElem).innerText = data.text;
 }

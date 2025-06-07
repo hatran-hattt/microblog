@@ -7,16 +7,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-06-06 17:17+0700\n"
-"PO-Revision-Date: 2025-06-06 17:14+0700\n"
+"POT-Creation-Date: 2025-06-07 16:46+0700\n"
+"PO-Revision-Date: 2025-06-07 16:46+0700\n"
 "Last-Translator: \n"
-"Language: vi\n"
 "Language-Team: vi <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Language: vi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.17.0\n"
+"X-Generator: Poedit 3.6\n"
 
 #: app/__init__.py:23
 msgid "Please log in to access this page."
@@ -86,11 +87,15 @@ msgstr "Mật khẩu mới"
 msgid "Confirm new password"
 msgstr "Xác nhận mật khẩu mới"
 
-#: app/routes.py:46
+#: app/routes.py:52
 msgid "Create post successully."
 msgstr "Tạo bài viết thành công."
 
-#: app/routes.py:97
+#: app/routes.py:67 app/routes.py:84 app/routes.py:183
+msgid "Translate"
+msgstr "Dịch"
+
+#: app/routes.py:105
 msgid "Invalid username or password"
 msgstr "Tên người dùng hoặc mật khẩu không hợp lệ"
 
@@ -98,40 +103,40 @@ msgstr "Tên người dùng hoặc mật khẩu không hợp lệ"
 msgid "Congratulations, you are now a registered user!"
 msgstr "Xin chúc mừng, bạn đã đăng ký tài khoản thành công!"
 
-#: app/routes.py:195
+#: app/routes.py:196
 msgid "Your changes have been saved."
 msgstr "Thay đổi của bạn đã được lưu."
 
-#: app/routes.py:216
+#: app/routes.py:217
 #, python-format
 msgid "User %(username)s not found."
 msgstr "Người dùng “%(username)s“ không tồn tại."
 
-#: app/routes.py:223
+#: app/routes.py:224
 msgid "Can not follow/unfollow yourself."
 msgstr "Không thể theo dõi/bỏ theo dõi chính mình."
 
-#: app/routes.py:228
+#: app/routes.py:229
 msgid "Action invalid."
 msgstr "Thao tác không hợp lệ."
 
-#: app/routes.py:233
+#: app/routes.py:234
 msgid "Follow successfully."
 msgstr "Đã theo dõi thành công."
 
-#: app/routes.py:236
+#: app/routes.py:237
 msgid "Unfollow successfully."
 msgstr "Bỏ theo dõi thành công."
 
-#: app/routes.py:254
+#: app/routes.py:255
 msgid "Reset password mail has been sent. Please check your mailbox"
 msgstr "Email khôi phục mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư của bạn"
 
-#: app/routes.py:269
+#: app/routes.py:270
 msgid "Reset password link is incorrect or has been expired!"
 msgstr "Link đặt lại mật khẩu không đúng hoặc đã hết hạn!"
 
-#: app/routes.py:279
+#: app/routes.py:280
 msgid "Change password successfully!"
 msgstr "Đã thay đổi mật khẩu thành công!"
 
@@ -231,4 +236,3 @@ msgstr "Chỉnh sửa hồ sơ"
 #: app/templates/user.html:57
 msgid "Recent Posts"
 msgstr "Bài viết gần đây"
-

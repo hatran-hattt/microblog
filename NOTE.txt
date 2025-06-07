@@ -358,6 +358,7 @@
 12. DateTime
     new Date(timestamp)).toLocaleString()
 
+
 13. Internationalization and Localization (commonly abbreviated I18n and L10n)
     Package: flask-babel
     Flow
@@ -401,7 +402,19 @@
         flask translate init LANG to add a new language
         flask translate update to update all language repositories
         flask translate compile to compile all language repositories
+
+
+14. Ajax translation
+    Package: langdetect
+
+    Flow
+        - Detect post's language　(when create new post, detect langguage & save to db)
+        - Show/hide translate link
+            (compare post's language vs user's language setting - get from flask-babel then save to g.locale)
+        - Translate (use third-party services)
         
+        
+
 
 # Others
     - Externally Visible Server: flask run --host=0.0.0.0
@@ -450,7 +463,6 @@
     However, modern Flask versions (since 2.0) allow you to define async def view functions to take advantage of asynchronous I/O (like with asyncio) when served by an ASGI (Asynchronous Server Gateway Interface) server.
     The 'async' extra provides the libraries Flask needs to bridge its WSGI core with async def views and ASGI servers.
         pip install Flask[async]
-
 
 
     

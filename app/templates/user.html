@@ -65,6 +65,9 @@
   const PAGINATION_TYPE = "{{ fetch_data_info.pagination_type }}";
   const SEARCH_CONDITION = "{{ fetch_data_info.search_condition }}";
   const USER_ID = "{{ user.id }}";
+  const LOCALE = "{{ g.locale }}";
+  const STR_TRANSLATE = "{{ translations.translate }}";
+  const LOADING_GIF_URL = "{{ url_for('static', filename='img/loading.gif') }}"
 
   document.addEventListener("DOMContentLoaded", function () {
     // Handle last seen timestamp

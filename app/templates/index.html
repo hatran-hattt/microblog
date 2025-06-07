@@ -20,6 +20,9 @@
   const PAGINATION_TYPE = "{{ fetch_data_info.pagination_type }}";
   const SEARCH_CONDITION = "{{ fetch_data_info.search_condition }}";
   const USER_ID = null;
+  const LOCALE = "{{ g.locale }}";
+  const STR_TRANSLATE = "{{ translations.translate }}";
+  const LOADING_GIF_URL = "{{ url_for('static', filename='img/loading.gif') }}"
 </script>
 <script src="{{ url_for('static', filename='js/load_posts.js') }}"></script>
 {% endblock scripts %}

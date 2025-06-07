@@ -1,6 +1,6 @@
 import math
 from app import app
-from flask import render_template, flash, redirect, url_for, request, jsonify
+from flask import render_template, flash, redirect, url_for, request, jsonify, g
 from app import db
 from app.constants import (
     NUM_POSTS_PER_PAGE,
@@ -23,14 +23,21 @@ from app.models import QueryUtility, User, Post
 from urllib.parse import urlsplit
 import sqlalchemy as sa
 from datetime import datetime, timezone
-from flask_babel import _
+from flask_babel import _, get_locale
+from langdetect import detect, LangDetectException
+
+from app.translate import translate_text
 
 
 @app.before_request
 def before_request():
+    # Save user's last seen
     if current_user.is_authenticated:
         current_user.last_seen = datetime.now(timezone.utc)
         db.session.commit()
+
+    # Save user's locale
+    g.locale = str(get_locale())
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -40,7 +47,12 @@ def index():
     form = NewPostForm()
 
     if form.validate_on_submit():
-        post = Post(content=form.content.data, author=current_user)
+        try:
+            language = detect(form.content.data)
+        except LangDetectException:
+            language = ""
+
+        post = Post(content=form.content.data, author=current_user, language=language)
         db.session.add(post)
         db.session.commit()
         flash(_("Create post successully."), FlashMsgType.SUCCESS)
@@ -58,6 +70,7 @@ def index():
             "search_condition": PostSearchCondition.CURRENT_USER_AND_FOLLOWING,
             "pagination_type": PaginationType.OFFSET,
         },
+        translations={"translate": _("Translate")},
     )
 
 
@@ -74,6 +87,7 @@ def explore():
             "search_condition": PostSearchCondition.ALL,
             "pagination_type": PaginationType.KEYSET,
         },
+        translations={"translate": _("Translate")},
     )
 
 
@@ -139,14 +153,6 @@ def register():
         user = User(username=form.username.data, email=form.email.data)
         user.set_password(form.password.data)
 
-        # TODO: temp post
-        user.posts.add(
-            Post(content="First post (Auto generated after registering user)")
-        )
-        user.posts.add(
-            Post(content="Second post (Auto generated after registering user)")
-        )
-
         db.session.add(
             user
         )  # The reason Post object was saved even without explicit session.add(post) or cascade="all" is due to the default save-update cascade behavior of SQLAlchemy relationships. When post3 was assigned to user2.posts, and user2 was added to the session, SQLAlchemy's object graph traversal during the flush detected post3 as a new, related object and automatically included it in the transaction for saving. This automatic behavior is convenient but can sometimes obscure the underlying session management if you're not aware of the default cascade rules.
@@ -180,6 +186,7 @@ def user(username):
             "search_condition": PostSearchCondition.USER,
             "pagination_type": PaginationType.KEYSET,
         },
+        translations={"translate": _("Translate")},
     )
 
 
@@ -374,3 +381,13 @@ def api_posts():
             "pagination_info": pagination_info if flag_pagination_info else None,
         }
     )
+
+
+@app.route("/api/translate", methods=["POST"])
+@login_required
+def translate():
+    data = request.get_json()
+    text = translate_text(
+        data["text"], data["source_language"], data["target_language"]
+    )
+    return {"text": text}

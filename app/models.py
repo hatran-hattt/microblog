@@ -130,6 +130,7 @@ class Post(db.Model):
         index=True, default=lambda: datetime.now(timezone.utc)
     )
     user_id: orm.Mapped[int] = orm.mapped_column(sa.ForeignKey(User.id), index=True)
+    language: orm.Mapped[Optional[str]] = orm.mapped_column(sa.String(5))
 
     # Relationship to User
     author: orm.Mapped[User] = orm.relationship(back_populates="posts")
@@ -143,6 +144,7 @@ class Post(db.Model):
             "id": self.id,
             "content": self.content,
             "timestamp": self.timestamp.isoformat(),  # ISO 8601 format for easy JS parsing
+            "language": self.language,
             "author": {
                 "avatar_url": self.author.get_avatar_url(50),
                 "user_url": url_for("user", username=self.author.username),

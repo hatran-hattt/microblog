@@ -1,17 +1,15 @@
 from datetime import datetime, timezone
 from time import time
 from typing import Optional
-from flask import url_for
+from flask import url_for, current_app
 import jwt
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from app import db
-from app import login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from hashlib import md5
 
-from app import app
 from app.constants import JWT_ENCODE_ALGORITHM
 
 
@@ -107,16 +105,16 @@ class User(UserMixin, db.Model):
     def get_reset_password_token(self, expires_in=300):
         return jwt.encode(
             {"reset_password": self.id, "exp": time() + expires_in},
-            app.config["SECRET_KEY"],
+            current_app.config["SECRET_KEY"],
             JWT_ENCODE_ALGORITHM,
         )
 
     @staticmethod
     def verify_reset_password_token(token):
         try:
-            user_id = jwt.decode(token, app.config["SECRET_KEY"], JWT_ENCODE_ALGORITHM)[
-                "reset_password"
-            ]
+            user_id = jwt.decode(
+                token, current_app.config["SECRET_KEY"], JWT_ENCODE_ALGORITHM
+            )["reset_password"]
         except:
             return None
 
@@ -147,7 +145,7 @@ class Post(db.Model):
             "language": self.language,
             "author": {
                 "avatar_url": self.author.get_avatar_url(50),
-                "user_url": url_for("user", username=self.author.username),
+                "user_url": url_for("main.user", username=self.author.username),
                 "display_name": (self.author.get_display_name()),
             },
         }

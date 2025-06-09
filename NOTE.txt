@@ -6,6 +6,10 @@
             routes.py           -> routes handlers
         microblog.py        -> main application module (import application instanceecho )
 
+    Virtual enviroment
+        Create: "python3 -m venv venv" <- asking Python to run the venv package, which creates a virtual environment named venv
+        Activatte: "source [path to activate script]" (ex: venv/bin/activate)
+        Deactivate: "deactivate"
     Run app
         set FLASK_APP environment variable -> TODO: check more about config
             (*) Note: The flask run command will look for a Flask application instance in the module referenced by the FLASK_APP environment variable
@@ -412,9 +416,48 @@
         - Show/hide translate link
             (compare post's language vs user's language setting - get from flask-babel then save to g.locale)
         - Translate (use third-party services)
-        
-        
 
+
+15. App Structure
+    - Many subsystems: user authentication, error handlers, core functionality
+        -> Separate use blueprints
+            * similar concept in other framework:
+                + ASP.NET Core MVC: Areas
+                + Express.js Node.js: Router
+                ...
+        (*) Some convert:
+            @app.errorhandler -> @bp.app_errorhandler
+            @app.route -> @bp.route
+            url_for('login') -> url_for('auth.login')
+    - Global variable app used by many modules (cause some tricky issues as the project grows.: testing,...)
+        -> Use application factory function (Any configuration, registration, and other setup the application needs will happen inside the function, then the application will be returned.)
+    - Environment variables
+        + Why use:
+            + security
+            + environment specific configuration
+            + portability (source remains the same, regardless of where it's deployed)
+            + best practice: using env variables for configuration
+        + set:
+            (1) quilckly for testing: Directly in the Terminal (only last for the current terminal session.)
+            (2) using .env file with python-dotenv 
+                + install package
+                + create .env in project root
+                +  call load_dotenv() in source (early in app's startup)
+            (3) via deployment platforms
+        + access: os.environ dictionary (get('Key'))
+        + .env vs .flaskenv
+            .env: sensitive infos
+            .flaskenv: non-sensitive infos
+            The flask command automatically imports into the environment any variables defined in the .flaskenv and .env files.
+            This is sufficient for the .flaskenv file, because its contents are only needed when running the application through the flask command.
+            The .env file, however, is going to be used also in the production deployment of this application, which is not going to use the flask command.
+            For that reason, it is a good idea to explicitly import the contents of the .env file.
+
+        + Common Flask-Related Environment Variables: FLASK_APP, FLASK_ENV
+            # 
+    - Requirements File (containt all the packages that are installed on virtual environment)
+        + gen: "pip freeze > requirements.txt"
+        + install on other venv: "pip install -r requirements.txt"
 
 # Others
     - Externally Visible Server: flask run --host=0.0.0.0
@@ -464,7 +507,17 @@
     The 'async' extra provides the libraries Flask needs to bridge its WSGI core with async def views and ASGI servers.
         pip install Flask[async]
 
+    - Flask contexts:
+        + App context: Before invoking your view functions, Flask pushes an application context, which brings current_app and g to life. When the request is complete, the context is removed, along with these variables
+        + Request context: When a request context is activated right before a request is handled, Flask's request and session, g variables become available, as well as Flask-Login's current_user.
+        >>>How Contexts are Managed:
+            Automatic Management: For typical web requests, Flask automatically pushes an application context and a request context at the beginning of handling a request, and pops them when the request is finished.
 
+            Manual Management: You often need to manually push contexts when you're working outside of a web request:
+
+            CLI Commands: When writing custom flask CLI commands, you might need to manually push an app_context to access current_app or db extensions.
+            Testing: When writing unit tests for your Flask application, you often push app.test_request_context() or app.app_context() to simulate a request or access app-bound resources.
+            Background Tasks: For background tasks or scripts that need to interact with your Flask application's setup (e.g., database, configurations), you might need to push a context
     
 # Note Improvement
     - Edit profile function: if input empty, not allow submit

@@ -1,13 +1,16 @@
 import os
 
 import click
-from app import app
+from flask import Blueprint
+
+
+bp = Blueprint("cli", __name__, cli_group=None)
 
 CMD_EXTRACT = "pybabel extract -F babel.cfg -k _l -o messages.pot ."
 # CMD_EXTRACT = "pybabel extract -F babel.cfg -o messages.pot ."
 
 
-@app.cli.group()
+@bp.cli.group()
 def translate():
     """Translation and localization commands."""
     pass

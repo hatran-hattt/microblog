@@ -1,7 +1,12 @@
 import os
 
+from dotenv import load_dotenv
+
 # main directory of the application
 basedir = os.path.abspath(os.path.dirname(__file__))
+
+# load environment variables from .env
+load_dotenv(os.path.join(basedir, ".env"))
 
 
 class Config:

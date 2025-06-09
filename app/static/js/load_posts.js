@@ -26,7 +26,7 @@ async function loadPosts_keyset() {
     isLoading = true;
     loadingIndicator.classList.remove('d-none');
 
-    let url = `/api/posts?search_condition=${SEARCH_CONDITION}&pagination_type=keyset&per_page=${PER_PAGE}`;
+    let url = `${URL_API_GET_POSTS}?search_condition=${SEARCH_CONDITION}&pagination_type=keyset&per_page=${PER_PAGE}`;
     if (USER_ID) {
         url += `&user_id=${USER_ID}`
     }
@@ -87,7 +87,7 @@ if (PAGINATION_TYPE == "keyset") {
 
 // ------OFFSET APPROACH-----Start
 function loadPosts_offset(page) {
-    let url = `/api/posts?search_condition=${SEARCH_CONDITION}&pagination_type=offset&per_page=${PER_PAGE}&page=${page}`;
+    let url = `${URL_API_GET_POSTS}?search_condition=${SEARCH_CONDITION}&pagination_type=offset&per_page=${PER_PAGE}&page=${page}`;
     if (USER_ID) {
         url += `&user_id=${USER_ID}`
     }
@@ -206,8 +206,8 @@ function createPostElement(post) {
 
 async function translate(sourceElem, targetElem, sourceLang, targetLang) {
     document.getElementById(targetElem).innerHTML =
-        `<img src="${LOADING_GIF_URL}" style="width: 50px; height: auto;">`;
-    const response = await fetch('/api/translate', {
+        `<img src="${URL_GIF_LOADING}" style="width: 50px; height: auto;">`;
+    const response = await fetch(URL_API_TRANSLATE, {
         method: 'POST',
         headers: {'Content-Type': 'application/json; charset=utf-8'},
         body: JSON.stringify({

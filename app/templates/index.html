@@ -22,7 +22,9 @@
   const USER_ID = null;
   const LOCALE = "{{ g.locale }}";
   const STR_TRANSLATE = "{{ translations.translate }}";
-  const LOADING_GIF_URL = "{{ url_for('static', filename='img/loading.gif') }}"
+  const URL_GIF_LOADING = "{{ url_for('static', filename='img/loading.gif') }}"
+  const URL_API_GET_POSTS = "{{ url_for('api.posts') }}";
+  const URL_API_TRANSLATE = "{{ url_for('api.translate') }}";
 </script>
 <script src="{{ url_for('static', filename='js/load_posts.js') }}"></script>
 {% endblock scripts %}

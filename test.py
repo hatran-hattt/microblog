@@ -1,18 +1,23 @@
 import os
 
-os.environ["DATABASE_URL"] = (
-    "sqlite://"  # direct SQLAlchemy to use an in-memory SQLite database
-)
-
+from config import Config
 from datetime import datetime, timezone, timedelta
 import unittest
-from app import app, db
+from app import db, create_app
 from app.models import User, Post
+
+
+class TestConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = (
+        "sqlite://"  # direct SQLAlchemy to use an in-memory SQLite database
+    )
 
 
 class TestUserModel(unittest.TestCase):
     def setUp(self):
-        self.app_context = app.app_context()
+        self.app = create_app(TestConfig)
+        self.app_context = self.app.app_context()
         self.app_context.push()
         db.create_all()
 
@@ -51,7 +56,8 @@ class TestUserModel(unittest.TestCase):
 
 class TestPostModel(unittest.TestCase):
     def setUp(self):
-        self.app_context = app.app_context()
+        self.app = create_app(TestConfig)
+        self.app_context = self.app.app_context()
         self.app_context.push()
         db.create_all()
 

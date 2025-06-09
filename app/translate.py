@@ -1,14 +1,12 @@
 from google.cloud import translate
-from app import app
+from flask import current_app
 
 
 def translate_text(text, source_language_code, target_language_code):
 
     client = translate.TranslationServiceClient()
     location = "global"
-    parent = (
-        f"projects/{app.config["GOOGLE_CLOUD_TRANS_PROJECT_ID"]}/locations/{location}"
-    )
+    parent = f"projects/{current_app.config["GOOGLE_CLOUD_TRANS_PROJECT_ID"]}/locations/{location}"
 
     response = client.translate_text(
         request={

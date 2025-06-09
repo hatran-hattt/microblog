@@ -5,7 +5,6 @@ from wtforms import (
     SubmitField,
     BooleanField,
     HiddenField,
-    TextAreaField,
 )
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from app.constants import LengthValidation
@@ -59,21 +58,6 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
             raise ValidationError(_l("Please use a different email address."))
-
-
-class EditProfileForm(FlaskForm):
-    fullname = StringField(_l("Full name"), validators=[Length(min=0, max=256)])
-    about_me = TextAreaField(_l("About me"), validators=[Length(min=0, max=256)])
-    submit = SubmitField(_l("Submit"))
-
-
-class EmptyForm(FlaskForm):
-    submit = SubmitField(_l("Submit"))
-
-
-class NewPostForm(FlaskForm):
-    content = TextAreaField("", validators=[DataRequired(), Length(max=256)])
-    submit = SubmitField(_l("Post"))
 
 
 class ForgotPasswordForm(FlaskForm):
